@@ -2,7 +2,7 @@ name: Refresh Report Data
 
 on:
   schedule:
-    - cron: '0 */2 * * *'   # every 2 hours UTC
+    - cron: '15 */2 * * *'  # every 2 hours at :15 UTC
   workflow_dispatch:          # allow manual trigger
 
 permissions:
