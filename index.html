@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultima Markets – Team Report</title>
+<script src="data.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#1f2937}
+.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:19px;font-weight:700}
+.header .sub{font-size:12px;color:#94a3b8;margin-top:3px}
+.tabs{display:flex;gap:6px}
+.tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;border:none;background:transparent;color:#94a3b8}
+.tab:hover{background:#334155;color:#fff}
+.tab.t-aeu{background:#0078d4;color:#fff}
+.tab.t-fra{background:#8764b8;color:#fff}
+.sec{display:none;padding:22px 32px}.sec.active{display:block}
+.sec-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.aeu-title{color:#0078d4}.fra-title{color:#8764b8}
+.cards{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card{background:#fff;border-radius:10px;padding:14px 18px;flex:1;min-width:120px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.val{font-size:21px;font-weight:700;margin:3px 0 1px}
+.csub{font-size:11px;font-weight:500}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:13px}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#374151}
+.th-name{background:#f9fafb;border-bottom:2px solid #e5e7eb}
+.group-month{background:#e8f0fe;border-bottom:2px solid #0078d4}
+.group-fra-month{background:#f0ebff;border-bottom:2px solid #8764b8}
+td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+tr:hover td{background:#f9fafb}
+.total-row td{background:#f9fafb;border-top:2px solid #e5e7eb;border-bottom:none}
+.cpa-week{color:#107c10;font-size:11px;font-weight:600}
+.footer{text-align:center;padding:14px;font-size:11px;color:#9ca3af}
+.delta-pos{color:#107c10;font-size:11px;font-weight:500;margin-top:1px}
+.delta-neg{color:#d13438;font-size:11px;font-weight:500;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>Ultima Markets</h1>
+    <div class="sub" id="sub-title">Team Business Report · Loading…</div>
+  </div>
+  <div class="tabs">
+    <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
+    <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
+  </div>
+</div>
+<div id="s-aeu" class="sec active"></div>
+<div id="s-fra" class="sec"></div>
+<div class="footer">Currency converted to USD · Data from Lark Base</div>
+
+<script>
+function fmt$(n){ return '$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtDelta(v, isMoney){
+  if(!v) return '';
+  const s = (v>0?'+':'-') + (isMoney ? fmt$(v) : Math.abs(v));
+  const cls = v>=0 ? 'delta-pos' : 'delta-neg';
+  return `<div class="${cls}">${s}</div>`;
+}
+function fmtCpaDelta(v){
+  if(!v) return '';
+  return `<div class="cpa-week">${v>0?'+':''}${v}</div>`;
+}
+
+function renderTeam(team, members, thClass){
+  const totals = members.reduce((acc, m) => {
+    acc.masterIB += m.masterIB; acc.masterIBWeek += m.masterIBWeek;
+    acc.subIB += m.subIB; acc.subIBWeek += m.subIBWeek;
+    acc.cpa += m.cpa; acc.cpaWeek += m.cpaWeek;
+    acc.gross += m.gross; acc.grossWeek += m.grossWeek;
+    acc.net += m.net; acc.netWeek += m.netWeek;
+    return acc;
+  }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
+
+  const netColor = totals.net < 0 ? 'color:#d13438' : '';
+  const teamLabel = team === 'aeu' ? 'AEU' : 'FRA';
+  const titleClass = team === 'aeu' ? 'aeu-title' : 'fra-title';
+
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}${fmtDelta(m.masterIBWeek, false)}</td>
+      <td>${m.subIB}${fmtDelta(m.subIBWeek, false)}</td>
+      <td>${m.cpa}${fmtCpaDelta(m.cpaWeek)}</td>
+      <td>${fmt$(m.gross)}${fmtDelta(m.grossWeek, true)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}${fmtDelta(m.netWeek, true)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="sec-title ${titleClass}">${teamLabel} Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${totals.masterIB}</div><div class="csub" style="color:#107c10">${totals.masterIBWeek>0?'+'+totals.masterIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${totals.subIB}</div><div class="csub" style="color:#107c10">${totals.subIBWeek>0?'+'+totals.subIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">${totals.cpa}</div><div class="csub" style="color:#107c10">${totals.cpaWeek>0?'+'+totals.cpaWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(totals.gross)}</div><div class="csub" style="color:#107c10">${totals.grossWeek>0?'+'+fmt$(totals.grossWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netColor}">${totals.net<0?'-':''}${fmt$(totals.net)}</div><div class="csub" style="color:#107c10">${totals.netWeek>0?'+'+fmt$(totals.netWeek):'—'}</div></div>
+    </div>
+    <table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="${thClass}" colspan="5">This Month&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8">&nbsp;&nbsp;<span style="color:#107c10">●</span> green = last 7 days</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="${thClass}">Master IB</th><th class="${thClass}">Sub IB</th><th class="${thClass}">CPA</th>
+        <th class="${thClass}">Gross</th><th class="${thClass}">Net</th>
+      </tr>
+    </thead><tbody>
+      ${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td>
+        <td><b>${totals.masterIB}</b>${fmtDelta(totals.masterIBWeek, false)}</td>
+        <td><b>${totals.subIB}</b>${fmtDelta(totals.subIBWeek, false)}</td>
+        <td><b>${totals.cpa}</b>${fmtCpaDelta(totals.cpaWeek)}</td>
+        <td><b>${fmt$(totals.gross)}</b>${fmtDelta(totals.grossWeek, true)}</td>
+        <td style="${netColor}"><b>${totals.net<0?'-':''}${fmt$(totals.net)}</b>${fmtDelta(totals.netWeek, true)}</td>
+      </tr>
+    </tbody></table>`;
+}
+
+function show(t){
+  document.getElementById('s-aeu').classList.toggle('active', t==='aeu');
+  document.getElementById('s-fra').classList.toggle('active', t==='fra');
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra'));
+  if(t==='aeu') document.querySelectorAll('.tab')[0].classList.add('t-aeu');
+  else document.getElementById('tb-fra').classList.add('t-fra');
+}
+
+(function init(){
+  const d = window.__DATA__;
+  if(!d){ document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>'; return; }
+
+  const month = d.meta.month;
+  const gen = d.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
+  document.title = `Ultima Markets – Team Report ${month}`;
+  document.getElementById('sub-title').textContent =
+    `Team Business Report · ${month} · Updated ${gen}`;
+
+  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', d.aeu, 'group-month');
+  document.getElementById('s-fra').innerHTML = renderTeam('fra', d.fra, 'group-fra-month');
+})();
+</script>
+</body>
+</html>
