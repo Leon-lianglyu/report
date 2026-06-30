@@ -1,7 +1,7 @@
 window.__DATA__ = {
   "meta": {
     "month": "2026-06",
-    "generated": "2026-06-30T14:41:39Z"
+    "generated": "2026-06-30T18:12:48Z"
   },
   "aeu": [
     {
@@ -12,23 +12,23 @@ window.__DATA__ = {
       "subIBWeek": 1,
       "cpa": 3,
       "cpaWeek": 2,
-      "gross": 120532.47,
-      "grossWeek": 15403.36,
-      "net": 91469.75,
-      "netWeek": 10364.47
+      "gross": 120590.05,
+      "grossWeek": 15460.94,
+      "net": 91527.33,
+      "netWeek": 10422.05
     },
     {
       "name": "Zack Woon",
       "masterIB": 7,
       "masterIBWeek": 3,
       "subIB": 18,
-      "subIBWeek": 10,
+      "subIBWeek": 11,
       "cpa": 1,
       "cpaWeek": 0,
-      "gross": 53374.36,
-      "grossWeek": 17817.21,
-      "net": -15994.11,
-      "netWeek": -5069.25
+      "gross": 53394.36,
+      "grossWeek": 17837.21,
+      "net": -22451.0,
+      "netWeek": -11526.14
     },
     {
       "name": "Jackson Chow",
@@ -38,10 +38,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 0,
       "cpaWeek": 0,
-      "gross": 1500.0,
-      "grossWeek": 1500.0,
-      "net": 1500.0,
-      "netWeek": 1500.0
+      "gross": 2900.0,
+      "grossWeek": 2900.0,
+      "net": 2900.0,
+      "netWeek": 2900.0
     },
     {
       "name": "Daisy Tu",
@@ -92,10 +92,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 0,
       "cpaWeek": 0,
-      "gross": 76861.04,
-      "grossWeek": 13512.55,
-      "net": 53860.34,
-      "netWeek": 7214.21
+      "gross": 79865.04,
+      "grossWeek": 16516.55,
+      "net": 56864.34,
+      "netWeek": 10218.21
     },
     {
       "name": "Joy Zhang",
@@ -105,10 +105,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 2,
       "cpaWeek": 1,
-      "gross": 45327.14,
-      "grossWeek": 16953.82,
-      "net": 32564.58,
-      "netWeek": 14910.48
+      "gross": 46079.14,
+      "grossWeek": 17705.82,
+      "net": 33316.58,
+      "netWeek": 15662.48
     },
     {
       "name": "Lizzie Liu",
@@ -131,10 +131,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 0,
       "cpaWeek": 0,
-      "gross": 9417.18,
-      "grossWeek": 3826.26,
-      "net": 3961.67,
-      "netWeek": 2787.42
+      "gross": 9467.18,
+      "grossWeek": 3876.26,
+      "net": 4011.67,
+      "netWeek": 2837.42
     },
     {
       "name": "Monica Yang",
@@ -233,8 +233,8 @@ window.__DATA__ = {
       "name": "Leslie Yang",
       "masterIB": 2,
       "subIB": 0,
-      "gross": 10254.83,
-      "net": 9237.05
+      "gross": 10830.63,
+      "net": 9812.85
     },
     {
       "name": "Elvis Qin",
