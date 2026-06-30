@@ -227,5 +227,21 @@ window.__DATA__ = {
       "net": 0.0,
       "netWeek": 0.0
     }
+  ],
+  "cr": [
+    {
+      "name": "Leslie Yang",
+      "masterIB": 0,
+      "subIB": 0,
+      "gross": 10258.76,
+      "net": 9239.82
+    },
+    {
+      "name": "Elvis Qin",
+      "masterIB": 2,
+      "subIB": 0,
+      "gross": 545.87,
+      "net": 211.28
+    }
   ]
 };

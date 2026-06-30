@@ -35,6 +35,8 @@ tr:hover td{background:#f9fafb}
 .footer{text-align:center;padding:14px;font-size:11px;color:#9ca3af}
 .delta-pos{color:#107c10;font-size:11px;font-weight:500;margin-top:1px}
 .delta-neg{color:#d13438;font-size:11px;font-weight:500;margin-top:1px}
+.tab.t-cr{background:#0f766e;color:#fff}
+.group-cr{background:#d1faf5;border-bottom:2px solid #0f766e}
 </style>
 </head>
 <body>
@@ -46,10 +48,12 @@ tr:hover td{background:#f9fafb}
   <div class="tabs">
     <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
     <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
+    <button class="tab" id="tb-cr" onclick="show('cr')">CR</button>
   </div>
 </div>
 <div id="s-aeu" class="sec active"></div>
 <div id="s-fra" class="sec"></div>
+<div id="s-cr" class="sec"></div>
 <div class="footer">Currency converted to USD · Data from Lark Base</div>
 
 <script>
@@ -123,12 +127,60 @@ function renderTeam(team, members, thClass){
     </tbody></table>`;
 }
 
+function renderCR(members){
+  const totals = members.reduce((acc, m) => {
+    acc.masterIB += m.masterIB; acc.subIB += m.subIB;
+    acc.gross += m.gross; acc.net += m.net;
+    return acc;
+  }, {masterIB:0, subIB:0, gross:0, net:0});
+
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}</td>
+      <td>${m.subIB}</td>
+      <td>${fmt$(m.gross)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}</td>
+    </tr>`;
+  }).join('');
+
+  const netStyle = totals.net < 0 ? 'style="color:#d13438"' : '';
+  return `
+    <div class="sec-title" style="color:#0f766e">CR Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${totals.masterIB}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${totals.subIB}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(totals.gross)}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" ${netStyle}>${totals.net<0?'-':''}${fmt$(totals.net)}</div></div>
+    </div>
+    <table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="group-cr" colspan="4">This Month</th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-cr">Master IB</th><th class="group-cr">Sub IB</th>
+        <th class="group-cr">Gross</th><th class="group-cr">Net</th>
+      </tr>
+    </thead><tbody>
+      ${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td>
+        <td><b>${totals.masterIB}</b></td>
+        <td><b>${totals.subIB}</b></td>
+        <td><b>${fmt$(totals.gross)}</b></td>
+        <td ${netStyle}><b>${totals.net<0?'-':''}${fmt$(totals.net)}</b></td>
+      </tr>
+    </tbody></table>`;
+}
+
 function show(t){
-  document.getElementById('s-aeu').classList.toggle('active', t==='aeu');
-  document.getElementById('s-fra').classList.toggle('active', t==='fra');
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra'));
-  if(t==='aeu') document.querySelectorAll('.tab')[0].classList.add('t-aeu');
-  else document.getElementById('tb-fra').classList.add('t-fra');
+  ['aeu','fra','cr'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', t===id));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr'));
+  const map = {aeu:'t-aeu', fra:'t-fra', cr:'t-cr'};
+  document.querySelectorAll('.tab')[['aeu','fra','cr'].indexOf(t)].classList.add(map[t]);
 }
 
 (function init(){
@@ -143,6 +195,7 @@ function show(t){
 
   document.getElementById('s-aeu').innerHTML = renderTeam('aeu', d.aeu, 'group-month');
   document.getElementById('s-fra').innerHTML = renderTeam('fra', d.fra, 'group-fra-month');
+  document.getElementById('s-cr').innerHTML = renderCR(d.cr || []);
 })();
 </script>
 </body>

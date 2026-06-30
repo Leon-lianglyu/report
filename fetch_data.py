@@ -11,6 +11,7 @@ APP_TOKEN = "BFmTbNlNWaB2ursUGhilXBC7gJd"
 TABLES = {
     "aeu": "tbl2xBDeojMd1SXP",
     "fra": "tblnOV7078lvNNxv",
+    "cr":  "tblph7EE0LZDcgrC",
 }
 
 
@@ -86,6 +87,27 @@ def build_team(rows):
     return result, month
 
 
+def build_cr(rows):
+    """CR Gross table has one row per member, no weekly data."""
+    month = None
+    result = []
+    for r in rows:
+        name = r.get("销售") or ""
+        if not name:
+            continue
+        if month is None and r.get("月份"):
+            month = r["月份"]
+        result.append({
+            "name":     name,
+            "masterIB": int(r.get("Master IB") or 0),
+            "subIB":    int(r.get("Sub IB") or 0),
+            "gross":    float(r.get("入金(USD)") or 0),
+            "net":      float(r.get("净入金(USD)") or 0),
+        })
+    result.sort(key=lambda x: x["gross"], reverse=True)
+    return result, month
+
+
 def main():
     app_id = os.environ.get("LARK_APP_ID")
     app_secret = os.environ.get("LARK_APP_SECRET")
@@ -94,11 +116,14 @@ def main():
 
     token = get_access_token(app_id, app_secret)
 
-    teams = {}
     month = None
+    teams = {}
     for team, table_id in TABLES.items():
         rows = fetch_table(token, table_id)
-        members, m = build_team(rows)
+        if team == "cr":
+            members, m = build_cr(rows)
+        else:
+            members, m = build_team(rows)
         teams[team] = members
         if m:
             month = m
@@ -110,6 +135,7 @@ def main():
         },
         "aeu": teams["aeu"],
         "fra": teams["fra"],
+        "cr":  teams["cr"],
     }
 
     with open("data.js", "w") as f:
@@ -117,7 +143,7 @@ def main():
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write(";\n")
 
-    print(f"Written data.js  ({len(teams['aeu'])} AEU, {len(teams['fra'])} FRA members)")
+    print(f"Written data.js  ({len(teams['aeu'])} AEU, {len(teams['fra'])} FRA, {len(teams['cr'])} CR members)")
 
 
 if __name__ == "__main__":
