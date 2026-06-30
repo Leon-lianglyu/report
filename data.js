@@ -1,7 +1,7 @@
 window.__DATA__ = {
   "meta": {
     "month": "2026-06",
-    "generated": "2026-06-30T18:12:48Z"
+    "generated": "2026-06-30T20:19:17Z"
   },
   "aeu": [
     {
@@ -12,10 +12,10 @@ window.__DATA__ = {
       "subIBWeek": 1,
       "cpa": 3,
       "cpaWeek": 2,
-      "gross": 120590.05,
-      "grossWeek": 15460.94,
-      "net": 91527.33,
-      "netWeek": 10422.05
+      "gross": 134568.6,
+      "grossWeek": 16460.94,
+      "net": 94466.29,
+      "netWeek": 11295.05
     },
     {
       "name": "Zack Woon",
@@ -25,10 +25,10 @@ window.__DATA__ = {
       "subIBWeek": 11,
       "cpa": 1,
       "cpaWeek": 0,
-      "gross": 53394.36,
-      "grossWeek": 17837.21,
-      "net": -22451.0,
-      "netWeek": -11526.14
+      "gross": 55714.36,
+      "grossWeek": 20157.21,
+      "net": -24225.66,
+      "netWeek": -13300.8
     },
     {
       "name": "Jackson Chow",
@@ -92,10 +92,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 0,
       "cpaWeek": 0,
-      "gross": 79865.04,
-      "grossWeek": 16516.55,
-      "net": 56864.34,
-      "netWeek": 10218.21
+      "gross": 80116.05,
+      "grossWeek": 16767.56,
+      "net": 54803.48,
+      "netWeek": 8157.35
     },
     {
       "name": "Joy Zhang",
