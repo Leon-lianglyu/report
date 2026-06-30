@@ -1,45 +1,56 @@
 #!/usr/bin/env python3
-"""Pull AEU & FRA data from Lark Base and write data.js for index.html."""
-import json, subprocess, sys
+"""Pull AEU & FRA data from Lark Base using App identity and write data.js."""
+import json, os, sys
 from datetime import datetime, timezone
+from urllib.request import urlopen, Request
+from urllib.parse import urlencode
+from urllib.error import HTTPError
 
-BASE_TOKEN = "BFmTbNlNWaB2ursUGhilXBC7gJd"
+BASE_URL = "https://open.larksuite.com"
+APP_TOKEN = "BFmTbNlNWaB2ursUGhilXBC7gJd"
 TABLES = {
     "aeu": "tbl2xBDeojMd1SXP",
     "fra": "tblnOV7078lvNNxv",
 }
 
 
-def fetch_table(table_id):
+def get_access_token(app_id, app_secret):
+    body = json.dumps({"app_id": app_id, "app_secret": app_secret}).encode()
+    req = Request(f"{BASE_URL}/open-apis/auth/v3/tenant_access_token/internal",
+                  data=body, headers={"Content-Type": "application/json"})
+    with urlopen(req) as r:
+        d = json.loads(r.read())
+    if d.get("code") != 0:
+        raise RuntimeError(f"Auth failed: {d}")
+    return d["tenant_access_token"]
+
+
+def fetch_table(token, table_id):
     rows = []
     page_token = None
+    headers = {"Authorization": f"Bearer {token}"}
     while True:
-        cmd = ["lark-cli", "base", "+record-list",
-               "--base-token", BASE_TOKEN,
-               "--table-id", table_id,
-               "--as", "user",
-               "--limit", "200",
-               "--format", "json"]
+        params = {"page_size": 200}
         if page_token:
-            cmd += ["--page-token", page_token]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        d = json.loads(result.stdout)
-        if not d.get("ok"):
-            raise RuntimeError(f"API error: {d}")
-        payload = d["data"]
-        fields = payload["fields"]
-        for row in payload["data"]:
-            rows.append(dict(zip(fields, row)))
-        if not payload.get("has_more"):
+            params["page_token"] = page_token
+        url = f"{BASE_URL}/open-apis/bitable/v1/apps/{APP_TOKEN}/tables/{table_id}/records?{urlencode(params)}"
+        req = Request(url, headers=headers)
+        with urlopen(req) as r:
+            d = json.loads(r.read())
+        if d.get("code") != 0:
+            raise RuntimeError(f"API error {table_id}: {d}")
+        items = d["data"]["items"]
+        for item in items:
+            rows.append(item["fields"])
+        if not d["data"].get("has_more"):
             break
-        page_token = payload.get("page_token")
+        page_token = d["data"].get("page_token")
         if not page_token:
             break
     return rows
 
 
 def build_team(rows):
-    """Group rows by 销售; each member has 本月 and 近7天 rows."""
     members = {}
     month = None
     for r in rows:
@@ -71,16 +82,22 @@ def build_team(rows):
             "netWeek":      float(w.get("净入金(USD)") or 0),
         })
 
-    # sort by gross desc
     result.sort(key=lambda x: x["gross"], reverse=True)
     return result, month
 
 
 def main():
+    app_id = os.environ.get("LARK_APP_ID")
+    app_secret = os.environ.get("LARK_APP_SECRET")
+    if not app_id or not app_secret:
+        sys.exit("Error: LARK_APP_ID and LARK_APP_SECRET env vars required")
+
+    token = get_access_token(app_id, app_secret)
+
     teams = {}
     month = None
     for team, table_id in TABLES.items():
-        rows = fetch_table(table_id)
+        rows = fetch_table(token, table_id)
         members, m = build_team(rows)
         teams[team] = members
         if m:
@@ -95,13 +112,12 @@ def main():
         "fra": teams["fra"],
     }
 
-    out_path = "data.js"
-    with open(out_path, "w") as f:
+    with open("data.js", "w") as f:
         f.write("window.__DATA__ = ")
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write(";\n")
 
-    print(f"Written {out_path}  ({len(teams['aeu'])} AEU, {len(teams['fra'])} FRA members)")
+    print(f"Written data.js  ({len(teams['aeu'])} AEU, {len(teams['fra'])} FRA members)")
 
 
 if __name__ == "__main__":
