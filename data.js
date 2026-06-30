@@ -1,7 +1,7 @@
 window.__DATA__ = {
   "meta": {
     "month": "2026-06",
-    "generated": "2026-06-30T20:19:17Z"
+    "generated": "2026-06-30T23:36:53Z"
   },
   "aeu": [
     {
@@ -12,10 +12,10 @@ window.__DATA__ = {
       "subIBWeek": 1,
       "cpa": 3,
       "cpaWeek": 2,
-      "gross": 134568.6,
-      "grossWeek": 16460.94,
-      "net": 94466.29,
-      "netWeek": 11295.05
+      "gross": 135068.39,
+      "grossWeek": 16960.74,
+      "net": 94966.09,
+      "netWeek": 11794.84
     },
     {
       "name": "Zack Woon",
@@ -27,8 +27,8 @@ window.__DATA__ = {
       "cpaWeek": 0,
       "gross": 55714.36,
       "grossWeek": 20157.21,
-      "net": -24225.66,
-      "netWeek": -13300.8
+      "net": -24862.49,
+      "netWeek": -13937.63
     },
     {
       "name": "Jackson Chow",
@@ -94,8 +94,8 @@ window.__DATA__ = {
       "cpaWeek": 0,
       "gross": 80116.05,
       "grossWeek": 16767.56,
-      "net": 54803.48,
-      "netWeek": 8157.35
+      "net": 54504.06,
+      "netWeek": 7857.93
     },
     {
       "name": "Joy Zhang",
@@ -105,10 +105,10 @@ window.__DATA__ = {
       "subIBWeek": 0,
       "cpa": 2,
       "cpaWeek": 1,
-      "gross": 46079.14,
-      "grossWeek": 17705.82,
-      "net": 33316.58,
-      "netWeek": 15662.48
+      "gross": 46236.72,
+      "grossWeek": 17863.4,
+      "net": 33473.16,
+      "netWeek": 15819.06
     },
     {
       "name": "Lizzie Liu",
@@ -233,8 +233,8 @@ window.__DATA__ = {
       "name": "Leslie Yang",
       "masterIB": 2,
       "subIB": 0,
-      "gross": 10830.63,
-      "net": 9812.85
+      "gross": 10945.79,
+      "net": 9928.01
     },
     {
       "name": "Elvis Qin",
