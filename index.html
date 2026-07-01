@@ -254,10 +254,8 @@ function renderX5SubTable(label, records) {
       cpaWeek: a.cpaWeek + m.cpaWeek, grossWeek: a.grossWeek + m.grossWeek, netWeek: a.netWeek + m.netWeek,
     }), {masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0});
     const sup = {...members[supIdx]};
-    sup.masterIB -= othersSum.masterIB; sup.subIB -= othersSum.subIB;
-    sup.cpa -= othersSum.cpa; sup.gross -= othersSum.gross; sup.net -= othersSum.net;
-    sup.masterIBWeek -= othersSum.masterIBWeek; sup.subIBWeek -= othersSum.subIBWeek;
-    sup.cpaWeek -= othersSum.cpaWeek; sup.grossWeek -= othersSum.grossWeek; sup.netWeek -= othersSum.netWeek;
+    sup.gross -= othersSum.gross; sup.net -= othersSum.net;
+    sup.grossWeek -= othersSum.grossWeek; sup.netWeek -= othersSum.netWeek;
     members = [...others, sup].sort((a,b) =>
       b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB || b.cpa - a.cpa || b.subIB - a.subIB);
   }
