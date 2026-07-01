@@ -60,11 +60,15 @@ def extract_records(rows, date_field, month_field, is_cr=False):
     by_month = defaultdict(list)
     for r in rows:
         name = r.get("销售") or ""
+        if isinstance(name, list): name = name[0] if name else ""
         month = r.get(month_field) or ""
+        if isinstance(month, list): month = month[0] if month else ""
         date = r.get(date_field) or ""
+        if isinstance(date, list): date = date[0] if date else ""
         if not name or not month or not date:
             continue
-        date = date[:10]  # trim to YYYY-MM-DD
+        date = str(date)[:10]  # trim to YYYY-MM-DD
+        month = str(month)
         rec = {
             "name":     name,
             "date":     date,
