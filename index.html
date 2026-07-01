@@ -72,31 +72,75 @@ let activeTab = 'aeu';
 let activeMonth = D ? D.meta.currentMonth : '';
 
 function fmt$(n){ return '$' + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
-
 function fmtDelta(v, isMoney) {
   if (!v) return '';
   const cls = v >= 0 ? 'delta-pos' : 'delta-neg';
   const s = (v > 0 ? '+' : '-') + (isMoney ? fmt$(v) : Math.abs(v));
   return `<div class="${cls}">${s}</div>`;
 }
-
 function fmtCpaDelta(v) {
   if (!v) return '';
   return `<div class="cpa-week">${v > 0 ? '+' : ''}${v}</div>`;
 }
 
-function renderTeam(team, members, thClass) {
+// Aggregate daily records for a given month and compute last-7-days from today
+function aggregate(records, isCr) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+
+  const monthly = {}, weekly = {};
+  for (const r of records) {
+    const n = r.name;
+    if (!monthly[n]) monthly[n] = {masterIB:0,subIB:0,cpa:0,gross:0,net:0};
+    if (!weekly[n])  weekly[n]  = {masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0};
+    monthly[n].masterIB += r.masterIB;
+    monthly[n].subIB    += r.subIB;
+    monthly[n].gross    += r.gross;
+    monthly[n].net      += r.net;
+    if (!isCr) monthly[n].cpa += (r.cpa||0);
+
+    if (r.date > cutoffStr) {
+      weekly[n].masterIBWeek += r.masterIB;
+      weekly[n].subIBWeek    += r.subIB;
+      weekly[n].grossWeek    += r.gross;
+      weekly[n].netWeek      += r.net;
+      if (!isCr) weekly[n].cpaWeek += (r.cpa||0);
+    }
+  }
+
+  const members = Object.keys(monthly).map(name => ({
+    name,
+    masterIB: Math.round(monthly[name].masterIB),
+    subIB:    Math.round(monthly[name].subIB),
+    cpa:      Math.round(monthly[name].cpa||0),
+    gross:    monthly[name].gross,
+    net:      monthly[name].net,
+    ...(isCr ? {} : {
+      masterIBWeek: Math.round(weekly[name].masterIBWeek),
+      subIBWeek:    Math.round(weekly[name].subIBWeek),
+      cpaWeek:      Math.round(weekly[name].cpaWeek),
+      grossWeek:    weekly[name].grossWeek,
+      netWeek:      weekly[name].netWeek,
+    })
+  }));
+  return members.sort((a,b) => b.gross - a.gross);
+}
+
+function renderTeam(team, records, thClass) {
+  const members = aggregate(records, false);
   const tot = members.reduce((a, m) => {
-    a.masterIB += m.masterIB; a.masterIBWeek += (m.masterIBWeek||0);
-    a.subIB    += m.subIB;    a.subIBWeek    += (m.subIBWeek||0);
-    a.cpa      += m.cpa;      a.cpaWeek      += (m.cpaWeek||0);
-    a.gross    += m.gross;    a.grossWeek    += (m.grossWeek||0);
-    a.net      += m.net;      a.netWeek      += (m.netWeek||0);
+    a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
+    a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
+    a.cpa      += m.cpa;      a.cpaWeek      += m.cpaWeek;
+    a.gross    += m.gross;    a.grossWeek    += m.grossWeek;
+    a.net      += m.net;      a.netWeek      += m.netWeek;
     return a;
   }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
 
-  const label = {aeu:'AEU',fra:'FRA'}[team] || team;
-  const titleCls = {aeu:'aeu-title',fra:'fra-title'}[team] || '';
+  const label = {aeu:'AEU',fra:'FRA'}[team];
+  const titleCls = {aeu:'aeu-title',fra:'fra-title'}[team];
   const netTotColor = tot.net < 0 ? 'color:#d13438' : '';
 
   const rows = members.map(m => {
@@ -142,7 +186,8 @@ function renderTeam(team, members, thClass) {
     </tbody></table>`;
 }
 
-function renderCR(members) {
+function renderCR(records) {
+  const members = aggregate(records, true);
   const tot = members.reduce((a, m) => {
     a.masterIB += m.masterIB; a.subIB += m.subIB;
     a.gross += m.gross; a.net += m.net;
@@ -170,10 +215,7 @@ function renderCR(members) {
       <div class="card"><div class="lbl">Monthly Net</div><div class="val" ${netTotStyle}>${tot.net<0?'-':''}${fmt$(tot.net)}</div></div>
     </div>
     <table><thead>
-      <tr>
-        <th class="th-name">Member</th>
-        <th class="group-cr-month" colspan="4">This Month</th>
-      </tr>
+      <tr><th class="th-name">Member</th><th class="group-cr-month" colspan="4">This Month</th></tr>
       <tr>
         <th class="th-name"></th>
         <th class="group-cr-month">Master IB</th><th class="group-cr-month">Sub IB</th>
@@ -181,9 +223,7 @@ function renderCR(members) {
       </tr>
     </thead><tbody>${rows}
       <tr class="total-row">
-        <td><b>Total</b></td>
-        <td><b>${tot.masterIB}</b></td>
-        <td><b>${tot.subIB}</b></td>
+        <td><b>Total</b></td><td><b>${tot.masterIB}</b></td><td><b>${tot.subIB}</b></td>
         <td><b>${fmt$(tot.gross)}</b></td>
         <td ${netTotStyle}><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b></td>
       </tr>
@@ -200,12 +240,9 @@ function render() {
 
 function show(t) {
   activeTab = t;
-  ['aeu','fra','cr'].forEach(id => {
-    document.getElementById('s-'+id).classList.toggle('active', id === t);
-  });
+  ['aeu','fra','cr'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', id === t));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr'));
-  const map = {aeu:'t-aeu', fra:'t-fra', cr:'t-cr'};
-  document.querySelectorAll('.tab')[['aeu','fra','cr'].indexOf(t)].classList.add(map[t]);
+  document.querySelectorAll('.tab')[['aeu','fra','cr'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr'}[t]);
 }
 
 function onMonthChange() {
@@ -214,11 +251,7 @@ function onMonthChange() {
 }
 
 (function init() {
-  if (!D) {
-    document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>';
-    return;
-  }
-
+  if (!D) { document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>'; return; }
   const months = Object.keys(D.months).sort().reverse();
   const sel = document.getElementById('month-sel');
   months.forEach(m => {
@@ -227,12 +260,9 @@ function onMonthChange() {
     if (m === D.meta.currentMonth) opt.selected = true;
     sel.appendChild(opt);
   });
-
   const gen = D.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
-  document.getElementById('sub-title').textContent =
-    `Team Business Report · ${activeMonth} · Updated ${gen}`;
+  document.getElementById('sub-title').textContent = `Team Business Report · ${activeMonth} · Updated ${gen}`;
   document.title = `Ultima Markets – Team Report ${activeMonth}`;
-
   render();
 })();
 </script>
