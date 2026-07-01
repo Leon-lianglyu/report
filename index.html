@@ -240,8 +240,27 @@ function renderCR(records) {
 }
 
 function renderX5SubTable(label, records) {
-  const members = aggregate(records, false);
+  let members = aggregate(records, false);
   if (!members.length) return '';
+
+  // Supervisor's row already contains members' data — subtract others' totals
+  const supIdx = members.findIndex(m => m.name === label);
+  if (supIdx !== -1) {
+    const others = members.filter((_, i) => i !== supIdx);
+    const othersSum = others.reduce((a, m) => ({
+      masterIB: a.masterIB + m.masterIB, subIB: a.subIB + m.subIB,
+      cpa: a.cpa + m.cpa, gross: a.gross + m.gross, net: a.net + m.net,
+      masterIBWeek: a.masterIBWeek + m.masterIBWeek, subIBWeek: a.subIBWeek + m.subIBWeek,
+      cpaWeek: a.cpaWeek + m.cpaWeek, grossWeek: a.grossWeek + m.grossWeek, netWeek: a.netWeek + m.netWeek,
+    }), {masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0});
+    const sup = {...members[supIdx]};
+    sup.masterIB -= othersSum.masterIB; sup.subIB -= othersSum.subIB;
+    sup.cpa -= othersSum.cpa; sup.gross -= othersSum.gross; sup.net -= othersSum.net;
+    sup.masterIBWeek -= othersSum.masterIBWeek; sup.subIBWeek -= othersSum.subIBWeek;
+    sup.cpaWeek -= othersSum.cpaWeek; sup.grossWeek -= othersSum.grossWeek; sup.netWeek -= othersSum.netWeek;
+    members = [...others, sup].sort((a,b) =>
+      b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB || b.cpa - a.cpa || b.subIB - a.subIB);
+  }
   const tot = members.reduce((a, m) => {
     a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
     a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
