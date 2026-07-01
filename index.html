@@ -125,7 +125,9 @@ function aggregate(records, isCr) {
       netWeek:      weekly[name].netWeek,
     })
   }));
-  return members.sort((a,b) => b.gross - a.gross);
+  return members.sort((a,b) =>
+    b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB ||
+    b.cpa - a.cpa || b.subIB - a.subIB);
 }
 
 function renderTeam(team, records, thClass) {
