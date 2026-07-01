@@ -20,9 +20,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab.t-aeu{background:#0078d4;color:#fff}
 .tab.t-fra{background:#8764b8;color:#fff}
 .tab.t-cr{background:#0f766e;color:#fff}
+.tab.t-x5{background:#b45309;color:#fff}
 .sec{display:none;padding:22px 32px}.sec.active{display:block}
 .sec-title{font-size:15px;font-weight:700;margin-bottom:14px}
-.aeu-title{color:#0078d4}.fra-title{color:#8764b8}.cr-title{color:#0f766e}
+.aeu-title{color:#0078d4}.fra-title{color:#8764b8}.cr-title{color:#0f766e}.x5-title{color:#b45309}
+.x5-sub-title{font-size:13px;font-weight:600;color:#92400e;margin:20px 0 10px;padding-top:10px;border-top:1px solid #e5e7eb}
+.x5-sub-title:first-of-type{margin-top:0;border-top:none}
 .cards{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .card{background:#fff;border-radius:10px;padding:14px 18px;flex:1;min-width:120px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
@@ -34,6 +37,7 @@ th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;text-transfor
 .group-month{background:#e8f0fe;border-bottom:2px solid #0078d4}
 .group-fra-month{background:#f0ebff;border-bottom:2px solid #8764b8}
 .group-cr-month{background:#d1faf5;border-bottom:2px solid #0f766e}
+.group-x5-month{background:#fef3c7;border-bottom:2px solid #b45309}
 td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
 tr:hover td{background:#f9fafb}
 .total-row td{background:#f9fafb;border-top:2px solid #e5e7eb;border-bottom:none}
@@ -58,12 +62,14 @@ tr:hover td{background:#f9fafb}
       <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
       <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
       <button class="tab" id="tb-cr"  onclick="show('cr')">CR</button>
+      <button class="tab" id="tb-x5"  onclick="show('x5')">X5</button>
     </div>
   </div>
 </div>
 <div id="s-aeu" class="sec active"></div>
 <div id="s-fra" class="sec"></div>
 <div id="s-cr"  class="sec"></div>
+<div id="s-x5"  class="sec"></div>
 <div class="footer">Currency converted to USD · Data from Lark Base</div>
 
 <script>
@@ -232,19 +238,87 @@ function renderCR(records) {
     </tbody></table>`;
 }
 
+function renderX5SubTable(label, records) {
+  const members = aggregate(records, false);
+  if (!members.length) return '';
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
+    a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
+    a.cpa      += m.cpa;      a.cpaWeek      += m.cpaWeek;
+    a.gross    += m.gross;    a.grossWeek    += m.grossWeek;
+    a.net      += m.net;      a.netWeek      += m.netWeek;
+    return a;
+  }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
+
+  const netTotColor = tot.net < 0 ? 'color:#d13438' : '';
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}${fmtDelta(m.masterIBWeek, false)}</td>
+      <td>${m.subIB}${fmtDelta(m.subIBWeek, false)}</td>
+      <td>${m.cpa}${fmtCpaDelta(m.cpaWeek)}</td>
+      <td>${fmt$(m.gross)}${fmtDelta(m.grossWeek, true)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}${fmtDelta(m.netWeek, true)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="x5-sub-title">${label}'s Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div><div class="csub" style="color:#107c10">${tot.masterIBWeek>0?'+'+tot.masterIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div><div class="csub" style="color:#107c10">${tot.subIBWeek>0?'+'+tot.subIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">${tot.cpa}</div><div class="csub" style="color:#107c10">${tot.cpaWeek>0?'+'+tot.cpaWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div><div class="csub" style="color:#107c10">${tot.grossWeek>0?'+'+fmt$(tot.grossWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netTotColor}">${tot.net<0?'-':''}${fmt$(tot.net)}</div><div class="csub" style="color:#107c10">${tot.netWeek>0?'+'+fmt$(tot.netWeek):'—'}</div></div>
+    </div>
+    <table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="group-x5-month" colspan="5">This Month&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8">&nbsp;&nbsp;<span style="color:#107c10">●</span> green = last 7 days</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-x5-month">Master IB</th><th class="group-x5-month">Sub IB</th><th class="group-x5-month">CPA</th>
+        <th class="group-x5-month">Gross</th><th class="group-x5-month">Net</th>
+      </tr>
+    </thead><tbody>${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td>
+        <td><b>${tot.masterIB}</b>${fmtDelta(tot.masterIBWeek, false)}</td>
+        <td><b>${tot.subIB}</b>${fmtDelta(tot.subIBWeek, false)}</td>
+        <td><b>${tot.cpa}</b>${fmtCpaDelta(tot.cpaWeek)}</td>
+        <td><b>${fmt$(tot.gross)}</b>${fmtDelta(tot.grossWeek, true)}</td>
+        <td style="${netTotColor}"><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b>${fmtDelta(tot.netWeek, true)}</td>
+      </tr>
+    </tbody></table>`;
+}
+
+function renderX5(records) {
+  const bySupervisor = {};
+  for (const r of records) {
+    const sup = r.supervisor || 'Unknown';
+    (bySupervisor[sup] = bySupervisor[sup] || []).push(r);
+  }
+  const supervisors = Object.keys(bySupervisor).sort();
+  return `<div class="sec-title x5-title">X5 Team</div>` +
+    supervisors.map(sup => renderX5SubTable(sup, bySupervisor[sup])).join('');
+}
+
 function render() {
   if (!D) return;
   const md = D.months[activeMonth] || {};
   document.getElementById('s-aeu').innerHTML = renderTeam('aeu', md.aeu || [], 'group-month');
   document.getElementById('s-fra').innerHTML = renderTeam('fra', md.fra || [], 'group-fra-month');
   document.getElementById('s-cr').innerHTML  = renderCR(md.cr || []);
+  document.getElementById('s-x5').innerHTML  = renderX5(md.x5 || []);
 }
 
 function show(t) {
   activeTab = t;
-  ['aeu','fra','cr'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', id === t));
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr'));
-  document.querySelectorAll('.tab')[['aeu','fra','cr'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr'}[t]);
+  ['aeu','fra','cr','x5'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', id === t));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr','t-x5'));
+  document.querySelectorAll('.tab')[['aeu','fra','cr','x5'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr',x5:'t-x5'}[t]);
 }
 
 function onMonthChange() {

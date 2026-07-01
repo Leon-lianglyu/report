@@ -12,6 +12,7 @@ TABLES = {
     "aeu": ("tbl2xBDeojMd1SXP", "日期", "月份"),
     "fra": ("tblnOV7078lvNNxv", "日期", "月份"),
     "cr":  ("tblph7EE0LZDcgrC", "日期", "月份"),
+    "x5":  ("tblwtWY7l6MVyucg", "日期", "月份"),
 }
 
 
@@ -55,22 +56,23 @@ def _n(v):
         return 0.0
 
 
-def extract_records(rows, date_field, month_field, is_cr=False):
+def _str(v):
+    """Normalize a field value that may be str, list, or dict to a plain string."""
+    if isinstance(v, list): v = v[0] if v else ""
+    if isinstance(v, dict): v = v.get("text") or v.get("value") or ""
+    return str(v or "")
+
+
+def extract_records(rows, date_field, month_field, is_cr=False, has_supervisor=False):
     """Convert raw rows to {month: [daily records]} structure."""
     by_month = defaultdict(list)
     for r in rows:
-        name = r.get("销售") or ""
-        if isinstance(name, list): name = name[0] if name else ""
-        month = r.get(month_field) or ""
-        if isinstance(month, list): month = month[0] if month else ""
-        if isinstance(month, dict): month = month.get("text") or month.get("value") or ""
-        date = r.get(date_field) or ""
-        if isinstance(date, list): date = date[0] if date else ""
-        if isinstance(date, dict): date = date.get("text") or date.get("value") or ""
+        name  = _str(r.get("销售"))
+        month = _str(r.get(month_field))
+        date  = _str(r.get(date_field))
         if not name or not month or not date:
             continue
-        date = str(date)[:10]  # trim to YYYY-MM-DD
-        month = str(month)
+        date  = date[:10]
         rec = {
             "name":     name,
             "date":     date,
@@ -81,6 +83,8 @@ def extract_records(rows, date_field, month_field, is_cr=False):
         }
         if not is_cr:
             rec["cpa"] = int(_n(r.get("CPA")))
+        if has_supervisor:
+            rec["supervisor"] = _str(r.get("supervisor"))
         by_month[month].append(rec)
     return by_month
 
@@ -98,7 +102,9 @@ def main():
 
     for team, (table_id, date_field, month_field) in TABLES.items():
         rows = fetch_table(token, table_id)
-        by_month = extract_records(rows, date_field, month_field, is_cr=(team == "cr"))
+        by_month = extract_records(rows, date_field, month_field,
+                                   is_cr=(team == "cr"),
+                                   has_supervisor=(team == "x5"))
         all_months |= set(by_month.keys())
         for month, records in by_month.items():
             all_by_month.setdefault(month, {})[team] = records
@@ -106,7 +112,6 @@ def main():
     sorted_months = sorted(all_months, reverse=True)
     current_month = sorted_months[0] if sorted_months else datetime.now(timezone.utc).strftime("%Y-%m")
 
-    # Ensure all teams present in every month
     months_data = {}
     for month in sorted_months:
         md = all_by_month.get(month, {})
@@ -114,6 +119,7 @@ def main():
             "aeu": md.get("aeu", []),
             "fra": md.get("fra", []),
             "cr":  md.get("cr", []),
+            "x5":  md.get("x5", []),
         }
 
     data = {
@@ -129,7 +135,7 @@ def main():
         json.dump(data, f, ensure_ascii=False)
         f.write(";\n")
 
-    counts = {team: sum(len(months_data[m].get(team,[])) for m in sorted_months) for team in ["aeu","fra","cr"]}
+    counts = {t: sum(len(months_data[m].get(t,[])) for m in sorted_months) for t in ["aeu","fra","cr","x5"]}
     print(f"Written data.js  months={sorted_months}  records={counts}")
 
 
