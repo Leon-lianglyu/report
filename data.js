@@ -1,47 +1,34 @@
 window.__DATA__ = {
   "meta": {
     "month": "2026-06",
-    "generated": "2026-06-30T23:36:53Z"
+    "generated": "2026-07-01T04:52:27Z"
   },
   "aeu": [
     {
       "name": "Vincent Yap",
-      "masterIB": 2,
-      "masterIBWeek": 1,
-      "subIB": 2,
-      "subIBWeek": 1,
-      "cpa": 3,
-      "cpaWeek": 2,
-      "gross": 135068.39,
-      "grossWeek": 16960.74,
-      "net": 94966.09,
-      "netWeek": 11794.84
-    },
-    {
-      "name": "Zack Woon",
-      "masterIB": 7,
-      "masterIBWeek": 3,
-      "subIB": 18,
-      "subIBWeek": 11,
-      "cpa": 1,
-      "cpaWeek": 0,
-      "gross": 55714.36,
-      "grossWeek": 20157.21,
-      "net": -24862.49,
-      "netWeek": -13937.63
-    },
-    {
-      "name": "Jackson Chow",
-      "masterIB": 4,
-      "masterIBWeek": 1,
+      "masterIB": 0,
+      "masterIBWeek": 0,
       "subIB": 0,
       "subIBWeek": 0,
       "cpa": 0,
+      "cpaWeek": 1,
+      "gross": 305.36,
+      "grossWeek": 15578.66,
+      "net": 305.36,
+      "netWeek": 11045.56
+    },
+    {
+      "name": "Zack Woon",
+      "masterIB": 0,
+      "masterIBWeek": 3,
+      "subIB": 1,
+      "subIBWeek": 9,
+      "cpa": 0,
       "cpaWeek": 0,
-      "gross": 2900.0,
-      "grossWeek": 2900.0,
-      "net": 2900.0,
-      "netWeek": 2900.0
+      "gross": 100.0,
+      "grossWeek": 18110.18,
+      "net": 100.0,
+      "netWeek": -14018.63
     },
     {
       "name": "Daisy Tu",
@@ -57,8 +44,21 @@ window.__DATA__ = {
       "netWeek": 0.0
     },
     {
+      "name": "Jackson Chow",
+      "masterIB": 0,
+      "masterIBWeek": 1,
+      "subIB": 0,
+      "subIBWeek": 0,
+      "cpa": 0,
+      "cpaWeek": 0,
+      "gross": 0.0,
+      "grossWeek": 2900.0,
+      "net": 0.0,
+      "netWeek": 2900.0
+    },
+    {
       "name": "Keith Chee",
-      "masterIB": 1,
+      "masterIB": 0,
       "masterIBWeek": 0,
       "subIB": 0,
       "subIBWeek": 0,
@@ -71,7 +71,7 @@ window.__DATA__ = {
     },
     {
       "name": "Sean Chung",
-      "masterIB": 1,
+      "masterIB": 0,
       "masterIBWeek": 0,
       "subIB": 0,
       "subIBWeek": 0,
@@ -85,82 +85,30 @@ window.__DATA__ = {
   ],
   "fra": [
     {
-      "name": "Ysia Hou",
-      "masterIB": 4,
-      "masterIBWeek": 2,
-      "subIB": 3,
-      "subIBWeek": 0,
-      "cpa": 0,
-      "cpaWeek": 0,
-      "gross": 80116.05,
-      "grossWeek": 16767.56,
-      "net": 54504.06,
-      "netWeek": 7857.93
-    },
-    {
       "name": "Joy Zhang",
-      "masterIB": 3,
+      "masterIB": 0,
       "masterIBWeek": 2,
-      "subIB": 2,
+      "subIB": 0,
       "subIBWeek": 0,
-      "cpa": 2,
+      "cpa": 0,
       "cpaWeek": 1,
-      "gross": 46236.72,
-      "grossWeek": 17863.4,
-      "net": 33473.16,
-      "netWeek": 15819.06
+      "gross": 1504.35,
+      "grossWeek": 20267.89,
+      "net": 1504.35,
+      "netWeek": 18222.85
     },
     {
-      "name": "Lizzie Liu",
-      "masterIB": 2,
-      "masterIBWeek": 1,
-      "subIB": 0,
-      "subIBWeek": 0,
-      "cpa": 0,
-      "cpaWeek": 0,
-      "gross": 10379.03,
-      "grossWeek": 0.0,
-      "net": 10379.03,
-      "netWeek": 0.0
-    },
-    {
-      "name": "Joey Zhou",
+      "name": "Ysia Hou",
       "masterIB": 0,
-      "masterIBWeek": 0,
+      "masterIBWeek": 2,
       "subIB": 0,
       "subIBWeek": 0,
       "cpa": 0,
       "cpaWeek": 0,
-      "gross": 9467.18,
-      "grossWeek": 3876.26,
-      "net": 4011.67,
-      "netWeek": 2837.42
-    },
-    {
-      "name": "Monica Yang",
-      "masterIB": 0,
-      "masterIBWeek": 0,
-      "subIB": 0,
-      "subIBWeek": 0,
-      "cpa": 0,
-      "cpaWeek": 0,
-      "gross": 6112.28,
-      "grossWeek": 1815.16,
-      "net": -3656.47,
-      "netWeek": 1815.16
-    },
-    {
-      "name": "Krystal Xia",
-      "masterIB": 1,
-      "masterIBWeek": 0,
-      "subIB": 0,
-      "subIBWeek": 0,
-      "cpa": 0,
-      "cpaWeek": 0,
-      "gross": 1151.6,
-      "grossWeek": 0.0,
-      "net": 1151.6,
-      "netWeek": 0.0
+      "gross": 160.0,
+      "grossWeek": 13327.7,
+      "net": 160.0,
+      "netWeek": 4777.57
     },
     {
       "name": "Zoe Yu",
@@ -203,7 +151,7 @@ window.__DATA__ = {
     },
     {
       "name": "Xue Lian",
-      "masterIB": 1,
+      "masterIB": 0,
       "masterIBWeek": 0,
       "subIB": 0,
       "subIBWeek": 0,
@@ -216,7 +164,7 @@ window.__DATA__ = {
     },
     {
       "name": "Sam Sha",
-      "masterIB": 4,
+      "masterIB": 0,
       "masterIBWeek": 0,
       "subIB": 0,
       "subIBWeek": 0,
@@ -226,6 +174,58 @@ window.__DATA__ = {
       "grossWeek": 0.0,
       "net": 0.0,
       "netWeek": 0.0
+    },
+    {
+      "name": "Lizzie Liu",
+      "masterIB": 0,
+      "masterIBWeek": 1,
+      "subIB": 0,
+      "subIBWeek": 0,
+      "cpa": 0,
+      "cpaWeek": 0,
+      "gross": 0.0,
+      "grossWeek": 0.0,
+      "net": 0.0,
+      "netWeek": 0.0
+    },
+    {
+      "name": "Joey Zhou",
+      "masterIB": 0,
+      "masterIBWeek": 0,
+      "subIB": 0,
+      "subIBWeek": 0,
+      "cpa": 0,
+      "cpaWeek": 0,
+      "gross": 0.0,
+      "grossWeek": 2495.15,
+      "net": 0.0,
+      "netWeek": 1455.68
+    },
+    {
+      "name": "Krystal Xia",
+      "masterIB": 0,
+      "masterIBWeek": 0,
+      "subIB": 0,
+      "subIBWeek": 0,
+      "cpa": 0,
+      "cpaWeek": 0,
+      "gross": 0.0,
+      "grossWeek": 0.0,
+      "net": 0.0,
+      "netWeek": 0.0
+    },
+    {
+      "name": "Monica Yang",
+      "masterIB": 0,
+      "masterIBWeek": 0,
+      "subIB": 0,
+      "subIBWeek": 0,
+      "cpa": 0,
+      "cpaWeek": 0,
+      "gross": 0.0,
+      "grossWeek": 1815.23,
+      "net": 0.0,
+      "netWeek": 1815.23
     }
   ],
   "cr": [
@@ -242,6 +242,20 @@ window.__DATA__ = {
       "subIB": 0,
       "gross": 545.48,
       "net": 211.22
+    },
+    {
+      "name": "Leslie Yang",
+      "masterIB": 0,
+      "subIB": 0,
+      "gross": 0.0,
+      "net": 0.0
+    },
+    {
+      "name": "Elvis Qin",
+      "masterIB": 0,
+      "subIB": 0,
+      "gross": 0.0,
+      "net": 0.0
     }
   ]
 };
