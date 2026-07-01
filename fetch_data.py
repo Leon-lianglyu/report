@@ -57,10 +57,21 @@ def _n(v):
 
 
 def _str(v):
-    """Normalize a field value that may be str, list, or dict to a plain string."""
-    if isinstance(v, list): v = v[0] if v else ""
-    if isinstance(v, dict): v = v.get("text") or v.get("value") or ""
-    return str(v or "")
+    """Normalize a Lark field value (str / list / dict / number) to a plain string."""
+    if v is None:
+        return ""
+    if isinstance(v, (int, float)):
+        return str(v)
+    if isinstance(v, list):
+        v = v[0] if v else ""
+    if isinstance(v, dict):
+        # try common text-field keys; if none found return ""
+        for key in ("text", "value", "en_us"):
+            candidate = v.get(key)
+            if candidate and isinstance(candidate, str):
+                return candidate
+        return ""
+    return str(v) if v else ""
 
 
 def extract_records(rows, date_field, month_field, is_cr=False, has_supervisor=False):
@@ -102,6 +113,9 @@ def main():
 
     for team, (table_id, date_field, month_field) in TABLES.items():
         rows = fetch_table(token, table_id)
+        if rows:
+            r0 = rows[0]
+            print(f"{team}: {len(rows)} rows | {month_field}={r0.get(month_field)!r} | {date_field}={r0.get(date_field)!r}")
         by_month = extract_records(rows, date_field, month_field,
                                    is_cr=(team == "cr"),
                                    has_supervisor=(team == "x5"))
