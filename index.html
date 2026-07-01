@@ -62,8 +62,8 @@ tr:hover td{background:#f9fafb}
     <div class="tabs">
       <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
       <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
-      <button class="tab" id="tb-cr"  onclick="show('cr')">CR</button>
       <button class="tab" id="tb-x5"  onclick="show('x5')">X5</button>
+      <button class="tab" id="tb-cr"  onclick="show('cr')">CR</button>
     </div>
   </div>
 </div>
@@ -339,7 +339,7 @@ function show(t) {
   activeTab = t;
   ['aeu','fra','cr','x5'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', id === t));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr','t-x5'));
-  document.querySelectorAll('.tab')[['aeu','fra','cr','x5'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr',x5:'t-x5'}[t]);
+  document.querySelectorAll('.tab')[['aeu','fra','x5','cr'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr',x5:'t-x5'}[t]);
 }
 
 function onMonthChange() {
