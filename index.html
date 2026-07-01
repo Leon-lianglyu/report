@@ -7,17 +7,22 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#1f2937}
-.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between}
+.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .header h1{font-size:19px;font-weight:700}
 .header .sub{font-size:12px;color:#94a3b8;margin-top:3px}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.month-filter{display:flex;align-items:center;gap:6px}
+.month-filter label{font-size:12px;color:#94a3b8}
+.month-filter select{padding:4px 8px;border-radius:6px;border:1px solid #475569;background:#334155;color:#fff;font-size:12px;cursor:pointer}
 .tabs{display:flex;gap:6px}
 .tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;border:none;background:transparent;color:#94a3b8}
 .tab:hover{background:#334155;color:#fff}
 .tab.t-aeu{background:#0078d4;color:#fff}
 .tab.t-fra{background:#8764b8;color:#fff}
+.tab.t-cr{background:#0f766e;color:#fff}
 .sec{display:none;padding:22px 32px}.sec.active{display:block}
 .sec-title{font-size:15px;font-weight:700;margin-bottom:14px}
-.aeu-title{color:#0078d4}.fra-title{color:#8764b8}
+.aeu-title{color:#0078d4}.fra-title{color:#8764b8}.cr-title{color:#0f766e}
 .cards{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .card{background:#fff;border-radius:10px;padding:14px 18px;flex:1;min-width:120px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
@@ -28,15 +33,14 @@ th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;text-transfor
 .th-name{background:#f9fafb;border-bottom:2px solid #e5e7eb}
 .group-month{background:#e8f0fe;border-bottom:2px solid #0078d4}
 .group-fra-month{background:#f0ebff;border-bottom:2px solid #8764b8}
+.group-cr-month{background:#d1faf5;border-bottom:2px solid #0f766e}
 td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
 tr:hover td{background:#f9fafb}
 .total-row td{background:#f9fafb;border-top:2px solid #e5e7eb;border-bottom:none}
-.cpa-week{color:#107c10;font-size:11px;font-weight:600}
 .footer{text-align:center;padding:14px;font-size:11px;color:#9ca3af}
 .delta-pos{color:#107c10;font-size:11px;font-weight:500;margin-top:1px}
 .delta-neg{color:#d13438;font-size:11px;font-weight:500;margin-top:1px}
-.tab.t-cr{background:#0f766e;color:#fff}
-.group-cr{background:#d1faf5;border-bottom:2px solid #0f766e}
+.cpa-week{color:#107c10;font-size:11px;font-weight:600}
 </style>
 </head>
 <body>
@@ -45,43 +49,55 @@ tr:hover td{background:#f9fafb}
     <h1>Ultima Markets</h1>
     <div class="sub" id="sub-title">Team Business Report · Loading…</div>
   </div>
-  <div class="tabs">
-    <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
-    <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
-    <button class="tab" id="tb-cr" onclick="show('cr')">CR</button>
+  <div class="header-right">
+    <div class="month-filter">
+      <label>Month</label>
+      <select id="month-sel" onchange="onMonthChange()"></select>
+    </div>
+    <div class="tabs">
+      <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
+      <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
+      <button class="tab" id="tb-cr"  onclick="show('cr')">CR</button>
+    </div>
   </div>
 </div>
 <div id="s-aeu" class="sec active"></div>
 <div id="s-fra" class="sec"></div>
-<div id="s-cr" class="sec"></div>
+<div id="s-cr"  class="sec"></div>
 <div class="footer">Currency converted to USD · Data from Lark Base</div>
 
 <script>
-function fmt$(n){ return '$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
-function fmtDelta(v, isMoney){
-  if(!v) return '';
-  const s = (v>0?'+':'-') + (isMoney ? fmt$(v) : Math.abs(v));
-  const cls = v>=0 ? 'delta-pos' : 'delta-neg';
+const D = window.__DATA__;
+let activeTab = 'aeu';
+let activeMonth = D ? D.meta.currentMonth : '';
+
+function fmt$(n){ return '$' + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
+
+function fmtDelta(v, isMoney) {
+  if (!v) return '';
+  const cls = v >= 0 ? 'delta-pos' : 'delta-neg';
+  const s = (v > 0 ? '+' : '-') + (isMoney ? fmt$(v) : Math.abs(v));
   return `<div class="${cls}">${s}</div>`;
 }
-function fmtCpaDelta(v){
-  if(!v) return '';
-  return `<div class="cpa-week">${v>0?'+':''}${v}</div>`;
+
+function fmtCpaDelta(v) {
+  if (!v) return '';
+  return `<div class="cpa-week">${v > 0 ? '+' : ''}${v}</div>`;
 }
 
-function renderTeam(team, members, thClass){
-  const totals = members.reduce((acc, m) => {
-    acc.masterIB += m.masterIB; acc.masterIBWeek += m.masterIBWeek;
-    acc.subIB += m.subIB; acc.subIBWeek += m.subIBWeek;
-    acc.cpa += m.cpa; acc.cpaWeek += m.cpaWeek;
-    acc.gross += m.gross; acc.grossWeek += m.grossWeek;
-    acc.net += m.net; acc.netWeek += m.netWeek;
-    return acc;
+function renderTeam(team, members, thClass) {
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.masterIBWeek += (m.masterIBWeek||0);
+    a.subIB    += m.subIB;    a.subIBWeek    += (m.subIBWeek||0);
+    a.cpa      += m.cpa;      a.cpaWeek      += (m.cpaWeek||0);
+    a.gross    += m.gross;    a.grossWeek    += (m.grossWeek||0);
+    a.net      += m.net;      a.netWeek      += (m.netWeek||0);
+    return a;
   }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
 
-  const netColor = totals.net < 0 ? 'color:#d13438' : '';
-  const teamLabel = team === 'aeu' ? 'AEU' : 'FRA';
-  const titleClass = team === 'aeu' ? 'aeu-title' : 'fra-title';
+  const label = {aeu:'AEU',fra:'FRA'}[team] || team;
+  const titleCls = {aeu:'aeu-title',fra:'fra-title'}[team] || '';
+  const netTotColor = tot.net < 0 ? 'color:#d13438' : '';
 
   const rows = members.map(m => {
     const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
@@ -96,13 +112,13 @@ function renderTeam(team, members, thClass){
   }).join('');
 
   return `
-    <div class="sec-title ${titleClass}">${teamLabel} Team</div>
+    <div class="sec-title ${titleCls}">${label} Team</div>
     <div class="cards">
-      <div class="card"><div class="lbl">Master IB</div><div class="val">${totals.masterIB}</div><div class="csub" style="color:#107c10">${totals.masterIBWeek>0?'+'+totals.masterIBWeek:'—'}</div></div>
-      <div class="card"><div class="lbl">Sub IB</div><div class="val">${totals.subIB}</div><div class="csub" style="color:#107c10">${totals.subIBWeek>0?'+'+totals.subIBWeek:'—'}</div></div>
-      <div class="card"><div class="lbl">CPA</div><div class="val">${totals.cpa}</div><div class="csub" style="color:#107c10">${totals.cpaWeek>0?'+'+totals.cpaWeek:'—'}</div></div>
-      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(totals.gross)}</div><div class="csub" style="color:#107c10">${totals.grossWeek>0?'+'+fmt$(totals.grossWeek):'—'}</div></div>
-      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netColor}">${totals.net<0?'-':''}${fmt$(totals.net)}</div><div class="csub" style="color:#107c10">${totals.netWeek>0?'+'+fmt$(totals.netWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div><div class="csub" style="color:#107c10">${tot.masterIBWeek>0?'+'+tot.masterIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div><div class="csub" style="color:#107c10">${tot.subIBWeek>0?'+'+tot.subIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">${tot.cpa}</div><div class="csub" style="color:#107c10">${tot.cpaWeek>0?'+'+tot.cpaWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div><div class="csub" style="color:#107c10">${tot.grossWeek>0?'+'+fmt$(tot.grossWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netTotColor}">${tot.net<0?'-':''}${fmt$(tot.net)}</div><div class="csub" style="color:#107c10">${tot.netWeek>0?'+'+fmt$(tot.netWeek):'—'}</div></div>
     </div>
     <table><thead>
       <tr>
@@ -114,24 +130,23 @@ function renderTeam(team, members, thClass){
         <th class="${thClass}">Master IB</th><th class="${thClass}">Sub IB</th><th class="${thClass}">CPA</th>
         <th class="${thClass}">Gross</th><th class="${thClass}">Net</th>
       </tr>
-    </thead><tbody>
-      ${rows}
+    </thead><tbody>${rows}
       <tr class="total-row">
         <td><b>Total</b></td>
-        <td><b>${totals.masterIB}</b>${fmtDelta(totals.masterIBWeek, false)}</td>
-        <td><b>${totals.subIB}</b>${fmtDelta(totals.subIBWeek, false)}</td>
-        <td><b>${totals.cpa}</b>${fmtCpaDelta(totals.cpaWeek)}</td>
-        <td><b>${fmt$(totals.gross)}</b>${fmtDelta(totals.grossWeek, true)}</td>
-        <td style="${netColor}"><b>${totals.net<0?'-':''}${fmt$(totals.net)}</b>${fmtDelta(totals.netWeek, true)}</td>
+        <td><b>${tot.masterIB}</b>${fmtDelta(tot.masterIBWeek, false)}</td>
+        <td><b>${tot.subIB}</b>${fmtDelta(tot.subIBWeek, false)}</td>
+        <td><b>${tot.cpa}</b>${fmtCpaDelta(tot.cpaWeek)}</td>
+        <td><b>${fmt$(tot.gross)}</b>${fmtDelta(tot.grossWeek, true)}</td>
+        <td style="${netTotColor}"><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b>${fmtDelta(tot.netWeek, true)}</td>
       </tr>
     </tbody></table>`;
 }
 
-function renderCR(members){
-  const totals = members.reduce((acc, m) => {
-    acc.masterIB += m.masterIB; acc.subIB += m.subIB;
-    acc.gross += m.gross; acc.net += m.net;
-    return acc;
+function renderCR(members) {
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.subIB += m.subIB;
+    a.gross += m.gross; a.net += m.net;
+    return a;
   }, {masterIB:0, subIB:0, gross:0, net:0});
 
   const rows = members.map(m => {
@@ -145,57 +160,80 @@ function renderCR(members){
     </tr>`;
   }).join('');
 
-  const netStyle = totals.net < 0 ? 'style="color:#d13438"' : '';
+  const netTotStyle = tot.net < 0 ? 'style="color:#d13438"' : '';
   return `
-    <div class="sec-title" style="color:#0f766e">CR Team</div>
+    <div class="sec-title cr-title">CR Team</div>
     <div class="cards">
-      <div class="card"><div class="lbl">Master IB</div><div class="val">${totals.masterIB}</div></div>
-      <div class="card"><div class="lbl">Sub IB</div><div class="val">${totals.subIB}</div></div>
-      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(totals.gross)}</div></div>
-      <div class="card"><div class="lbl">Monthly Net</div><div class="val" ${netStyle}>${totals.net<0?'-':''}${fmt$(totals.net)}</div></div>
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" ${netTotStyle}>${tot.net<0?'-':''}${fmt$(tot.net)}</div></div>
     </div>
     <table><thead>
       <tr>
         <th class="th-name">Member</th>
-        <th class="group-cr" colspan="4">This Month</th>
+        <th class="group-cr-month" colspan="4">This Month</th>
       </tr>
       <tr>
         <th class="th-name"></th>
-        <th class="group-cr">Master IB</th><th class="group-cr">Sub IB</th>
-        <th class="group-cr">Gross</th><th class="group-cr">Net</th>
+        <th class="group-cr-month">Master IB</th><th class="group-cr-month">Sub IB</th>
+        <th class="group-cr-month">Gross</th><th class="group-cr-month">Net</th>
       </tr>
-    </thead><tbody>
-      ${rows}
+    </thead><tbody>${rows}
       <tr class="total-row">
         <td><b>Total</b></td>
-        <td><b>${totals.masterIB}</b></td>
-        <td><b>${totals.subIB}</b></td>
-        <td><b>${fmt$(totals.gross)}</b></td>
-        <td ${netStyle}><b>${totals.net<0?'-':''}${fmt$(totals.net)}</b></td>
+        <td><b>${tot.masterIB}</b></td>
+        <td><b>${tot.subIB}</b></td>
+        <td><b>${fmt$(tot.gross)}</b></td>
+        <td ${netTotStyle}><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b></td>
       </tr>
     </tbody></table>`;
 }
 
-function show(t){
-  ['aeu','fra','cr'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', t===id));
+function render() {
+  if (!D) return;
+  const md = D.months[activeMonth] || {};
+  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', md.aeu || [], 'group-month');
+  document.getElementById('s-fra').innerHTML = renderTeam('fra', md.fra || [], 'group-fra-month');
+  document.getElementById('s-cr').innerHTML  = renderCR(md.cr || []);
+}
+
+function show(t) {
+  activeTab = t;
+  ['aeu','fra','cr'].forEach(id => {
+    document.getElementById('s-'+id).classList.toggle('active', id === t);
+  });
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr'));
   const map = {aeu:'t-aeu', fra:'t-fra', cr:'t-cr'};
   document.querySelectorAll('.tab')[['aeu','fra','cr'].indexOf(t)].classList.add(map[t]);
 }
 
-(function init(){
-  const d = window.__DATA__;
-  if(!d){ document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>'; return; }
+function onMonthChange() {
+  activeMonth = document.getElementById('month-sel').value;
+  render();
+}
 
-  const month = d.meta.month;
-  const gen = d.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
-  document.title = `Ultima Markets – Team Report ${month}`;
+(function init() {
+  if (!D) {
+    document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>';
+    return;
+  }
+
+  const months = Object.keys(D.months).sort().reverse();
+  const sel = document.getElementById('month-sel');
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if (m === D.meta.currentMonth) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  const gen = D.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
   document.getElementById('sub-title').textContent =
-    `Team Business Report · ${month} · Updated ${gen}`;
+    `Team Business Report · ${activeMonth} · Updated ${gen}`;
+  document.title = `Ultima Markets – Team Report ${activeMonth}`;
 
-  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', d.aeu, 'group-month');
-  document.getElementById('s-fra').innerHTML = renderTeam('fra', d.fra, 'group-fra-month');
-  document.getElementById('s-cr').innerHTML = renderCR(d.cr || []);
+  render();
 })();
 </script>
 </body>
