@@ -244,7 +244,8 @@ function renderX5SubTable(label, records) {
   if (!members.length) return '';
 
   // Supervisor's row already contains members' data — subtract others' totals
-  const supIdx = members.findIndex(m => m.name === label);
+  const normalize = s => s.toLowerCase().replace(/[\s.]/g, '');
+  const supIdx = members.findIndex(m => normalize(m.name) === normalize(label));
   if (supIdx !== -1) {
     const others = members.filter((_, i) => i !== supIdx);
     const othersSum = others.reduce((a, m) => ({
