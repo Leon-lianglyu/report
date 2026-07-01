@@ -63,8 +63,10 @@ def extract_records(rows, date_field, month_field, is_cr=False):
         if isinstance(name, list): name = name[0] if name else ""
         month = r.get(month_field) or ""
         if isinstance(month, list): month = month[0] if month else ""
+        if isinstance(month, dict): month = month.get("text") or month.get("value") or ""
         date = r.get(date_field) or ""
         if isinstance(date, list): date = date[0] if date else ""
+        if isinstance(date, dict): date = date.get("text") or date.get("value") or ""
         if not name or not month or not date:
             continue
         date = str(date)[:10]  # trim to YYYY-MM-DD
