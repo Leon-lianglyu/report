@@ -9,9 +9,9 @@ from urllib.parse import urlencode
 BASE_URL = "https://open.larksuite.com"
 APP_TOKEN = "BFmTbNlNWaB2ursUGhilXBC7gJd"
 TABLES = {
-    "aeu": ("tbl2xBDeojMd1SXP", "周期", "月份"),
-    "fra": ("tblnOV7078lvNNxv", "周期", "月份"),
-    "cr":  ("tblph7EE0LZDcgrC", "日期", "月"),
+    "aeu": ("tbl2xBDeojMd1SXP", "日期", "月份"),
+    "fra": ("tblnOV7078lvNNxv", "日期", "月份"),
+    "cr":  ("tblph7EE0LZDcgrC", "日期", "月份"),
 }
 
 
