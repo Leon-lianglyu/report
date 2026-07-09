@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Ultima Markets – Team Report Jun 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#1f2937}
+.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:19px;font-weight:700}
+.header .sub{font-size:12px;color:#94a3b8;margin-top:3px}
+.tabs{display:flex;gap:6px}
+.tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;border:none;background:transparent;color:#94a3b8}
+.tab:hover{background:#334155;color:#fff}
+.tab.t-aeu{background:#0078d4;color:#fff}
+.tab.t-fra{background:#8764b8;color:#fff}
+.sec{display:none;padding:22px 32px}.sec.active{display:block}
+.sec-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.aeu-title{color:#0078d4}.fra-title{color:#8764b8}
+.cards{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card{background:#fff;border-radius:10px;padding:14px 18px;flex:1;min-width:120px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.val{font-size:21px;font-weight:700;margin:3px 0 1px}
+.csub{font-size:11px;font-weight:500}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:13px}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#374151}
+.th-name{background:#f9fafb;border-bottom:2px solid #e5e7eb}
+.group-month{background:#e8f0fe;border-bottom:2px solid #0078d4}
+.group-fra-month{background:#f0ebff;border-bottom:2px solid #8764b8}
+td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+tr:hover td{background:#f9fafb}
+.total-row td{background:#f9fafb;border-top:2px solid #e5e7eb;border-bottom:none}
+.cpa-week{color:#107c10;font-size:11px;font-weight:600}
+.footer{text-align:center;padding:14px;font-size:11px;color:#9ca3af}
+</style></head><body>
+<div class="header">
+  <div><h1>Ultima Markets</h1><div class="sub">Team Business Report &nbsp;·&nbsp; Jun 2026 &nbsp;·&nbsp; Generated Jun 29, 2026</div></div>
+  <div class="tabs">
+    <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
+    <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
+  </div>
+</div>
+<div id="s-aeu" class="sec active"><div class="sec-title aeu-title">AEU Team</div><div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">13</div><div class="csub" style="color:#107c10">+4</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">20</div><div class="csub" style="color:#107c10">+13</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">3</div><div class="csub" style="color:#107c10">+1</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">$168,890</div><div class="csub" style="color:#107c10">+$33,958</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="color:inherit">$73,880</div><div class="csub" style="color:#107c10">+$6,552</div></div>
+    </div><table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="group-month" colspan="5">This Month &nbsp;<span style="font-weight:400;opacity:.7">(Jun 1 – Jun 29)</span>&nbsp;&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8"><span style="color:#107c10">●</span> green = last 7 days (Jun 22 – Jun 29)</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-month">Master IB</th><th class="group-month">Sub IB</th><th class="group-month">CPA</th>
+        <th class="group-month">Gross</th><th class="group-month">Net</th>
+      </tr>
+    </thead><tbody><tr>
+          <td>Vincent.Yap</td>
+          <td>2<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+2</div></td>
+          <td>2<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+2</div></td>
+          <td>2<div class="cpa-week">+1</div></td>
+          <td>$117,418<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$15,860</div></td>
+          <td style="">$88,360<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$9,699</div></td>
+        </tr><tr>
+          <td>Zack.Woon</td>
+          <td>6<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+2</div></td>
+          <td>18<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+11</div></td>
+          <td>1</td>
+          <td>$49,972<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$16,599</div></td>
+          <td style="color:#d13438">-$15,980<div style="color:#d13438;font-size:11px;font-weight:500;margin-top:1px">$4,647</div></td>
+        </tr><tr>
+          <td>Jackson.Chow</td>
+          <td>3</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$1,500<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$1,500</div></td>
+          <td style="">$1,500<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$1,500</div></td>
+        </tr><tr>
+          <td>Keith.Chee</td>
+          <td>1</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr>
+          <td>Sean.Chung</td>
+          <td>1</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr class="total-row">
+      <td><b>Total</b></td>
+      <td><b>13</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+4</div></td><td><b>20</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+13</div></td>
+      <td><b>3</b><div class="cpa-week">+1</div></td>
+      <td><b>$168,890</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$33,958</div></td>
+      <td style=""><b>$73,880</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$6,552</div></td>
+    </tr></tbody></table></div>
+<div id="s-fra" class="sec"><div class="sec-title fra-title">FRA Team</div><div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">15</div><div class="csub" style="color:#107c10">+5</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">5</div><div class="csub" style="color:#107c10">—</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">2</div><div class="csub" style="color:#107c10">+1</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">$143,830</div><div class="csub" style="color:#107c10">+$33,386</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="color:inherit">$93,528</div><div class="csub" style="color:#107c10">+$22,216</div></div>
+    </div><table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="group-fra-month" colspan="5">This Month &nbsp;<span style="font-weight:400;opacity:.7">(Jun 1 – Jun 29)</span>&nbsp;&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8"><span style="color:#107c10">●</span> green = last 7 days (Jun 22 – Jun 29)</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-fra-month">Master IB</th><th class="group-fra-month">Sub IB</th><th class="group-fra-month">CPA</th>
+        <th class="group-fra-month">Gross</th><th class="group-fra-month">Net</th>
+      </tr>
+    </thead><tbody><tr>
+          <td>Ysia.Hou</td>
+          <td>4<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+2</div></td>
+          <td>3</td>
+          <td>0</td>
+          <td>$72,802<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$10,274</div></td>
+          <td style="">$50,495<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$2,237</div></td>
+        </tr><tr>
+          <td>Joy.Zhang</td>
+          <td>3<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+3</div></td>
+          <td>2</td>
+          <td>2<div class="cpa-week">+1</div></td>
+          <td>$44,013<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$17,289</div></td>
+          <td style="">$31,249<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$15,195</div></td>
+        </tr><tr>
+          <td>Lizzie.Liu</td>
+          <td>2</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$10,379</td>
+          <td style="">$10,379</td>
+        </tr><tr>
+          <td>Joey.Zhou</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$9,370<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$4,008</div></td>
+          <td style="">$3,912<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$2,969</div></td>
+        </tr><tr>
+          <td>Monica.Yang</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$6,113<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$1,815</div></td>
+          <td style="color:#d13438">-$3,659<div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$1,815</div></td>
+        </tr><tr>
+          <td>Krystal.Xia</td>
+          <td>1</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$1,152</td>
+          <td style="">$1,152</td>
+        </tr><tr>
+          <td>Zoe.Yu</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr>
+          <td>Zoey.Lian</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr>
+          <td>Henry.Zhang</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr>
+          <td>Xue.Lian</td>
+          <td>1</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr>
+          <td>Sam.Sha</td>
+          <td>4</td>
+          <td>0</td>
+          <td>0</td>
+          <td>$0</td>
+          <td style="">$0</td>
+        </tr><tr class="total-row">
+      <td><b>Total</b></td>
+      <td><b>15</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+5</div></td><td><b>5</b></td>
+      <td><b>2</b><div class="cpa-week">+1</div></td>
+      <td><b>$143,830</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$33,386</div></td>
+      <td style=""><b>$93,528</b><div style="color:#107c10;font-size:11px;font-weight:500;margin-top:1px">+$22,216</div></td>
+    </tr></tbody></table></div>
+<div class="footer">Currency converted to USD using live CRM exchange rates</div>
+<script>
+function show(t){
+  document.getElementById('s-aeu').classList.toggle('active',t==='aeu');
+  document.getElementById('s-fra').classList.toggle('active',t==='fra');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('t-aeu','t-fra'));
+  if(t==='aeu') document.querySelectorAll('.tab')[0].classList.add('t-aeu');
+  else document.getElementById('tb-fra').classList.add('t-fra');
+}
+</script></body></html>

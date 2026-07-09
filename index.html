@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultima Markets – Team Report</title>
+<script src="data.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#1f2937}
+.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.header h1{font-size:19px;font-weight:700}
+.header .sub{font-size:12px;color:#94a3b8;margin-top:3px}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.month-filter{display:flex;align-items:center;gap:6px}
+.month-filter label{font-size:12px;color:#94a3b8}
+.month-filter select{padding:4px 8px;border-radius:6px;border:1px solid #475569;background:#334155;color:#fff;font-size:12px;cursor:pointer}
+.month-arrow{background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.month-arrow:hover{color:#fff}.tabs{display:flex;gap:6px}
+.tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;border:none;background:transparent;color:#94a3b8}
+.tab:hover{background:#334155;color:#fff}
+.tab.t-aeu{background:#0078d4;color:#fff}
+.tab.t-fra{background:#8764b8;color:#fff}
+.tab.t-cr{background:#0f766e;color:#fff}
+.tab.t-x5{background:#b45309;color:#fff}
+.sec{display:none;padding:22px 32px}.sec.active{display:block}
+.sec-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.aeu-title{color:#0078d4}.fra-title{color:#8764b8}.cr-title{color:#0f766e}.x5-title{color:#b45309}
+.x5-columns{display:flex;gap:24px;align-items:flex-start}
+.x5-col{flex:1;min-width:0}
+.x5-sub-title{font-size:13px;font-weight:600;color:#92400e;margin:0 0 10px}
+.cards{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card{background:#fff;border-radius:10px;padding:14px 18px;flex:1;min-width:120px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.val{font-size:21px;font-weight:700;margin:3px 0 1px}
+.csub{font-size:11px;font-weight:500}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:13px}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#374151}
+.th-name{background:#f9fafb;border-bottom:2px solid #e5e7eb}
+.group-month{background:#e8f0fe;border-bottom:2px solid #0078d4}
+.group-fra-month{background:#f0ebff;border-bottom:2px solid #8764b8}
+.group-cr-month{background:#d1faf5;border-bottom:2px solid #0f766e}
+.group-x5-month{background:#fef3c7;border-bottom:2px solid #b45309}
+td{padding:9px 13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+tr:hover td{background:#f9fafb}
+.total-row td{background:#f9fafb;border-top:2px solid #e5e7eb;border-bottom:none}
+.footer{text-align:center;padding:14px;font-size:11px;color:#9ca3af}
+.delta-pos{color:#107c10;font-size:11px;font-weight:500;margin-top:1px}
+.delta-neg{color:#d13438;font-size:11px;font-weight:500;margin-top:1px}
+.cpa-week{color:#107c10;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>Ultima Markets</h1>
+    <div class="sub" id="sub-title">Team Business Report · Loading…</div>
+  </div>
+  <div class="header-right">
+    <div class="month-filter">
+      <label>Month</label>
+      <button class="month-arrow" onclick="shiftMonth(-1)" title="Previous month (←)">‹</button>
+      <select id="month-sel" onchange="onMonthChange()"></select>
+      <button class="month-arrow" onclick="shiftMonth(1)" title="Next month (→)">›</button>
+    </div>
+    <div class="tabs">
+      <button class="tab t-aeu" onclick="show('aeu')">AEU</button>
+      <button class="tab" id="tb-fra" onclick="show('fra')">FRA</button>
+      <button class="tab" id="tb-x5"  onclick="show('x5')">X5</button>
+      <button class="tab" id="tb-cr"  onclick="show('cr')">CR</button>
+    </div>
+  </div>
+</div>
+<div id="s-aeu" class="sec active"></div>
+<div id="s-fra" class="sec"></div>
+<div id="s-cr"  class="sec"></div>
+<div id="s-x5"  class="sec"></div>
+<div class="footer">Currency converted to USD · Data from Lark Base</div>
+
+<script>
+const D = window.__DATA__;
+let activeTab = 'aeu';
+let activeMonth = D ? D.meta.currentMonth : '';
+
+function fmt$(n){ return '$' + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
+function fmtDelta(v, isMoney) {
+  if (!v) return '';
+  const cls = v >= 0 ? 'delta-pos' : 'delta-neg';
+  const s = (v > 0 ? '+' : '-') + (isMoney ? fmt$(v) : Math.abs(v));
+  return `<div class="${cls}">${s}</div>`;
+}
+function fmtCpaDelta(v) {
+  if (!v) return '';
+  return `<div class="cpa-week">${v > 0 ? '+' : ''}${v}</div>`;
+}
+
+// Aggregate daily records for a given month and compute last-7-days from today
+function aggregate(records, isCr) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+
+  const monthly = {}, weekly = {};
+  for (const r of records) {
+    const n = r.name;
+    if (!monthly[n]) monthly[n] = {masterIB:0,subIB:0,cpa:0,gross:0,net:0};
+    if (!weekly[n])  weekly[n]  = {masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0};
+    monthly[n].masterIB += r.masterIB;
+    monthly[n].subIB    += r.subIB;
+    monthly[n].gross    += r.gross;
+    monthly[n].net      += r.net;
+    if (!isCr) monthly[n].cpa += (r.cpa||0);
+
+    if (r.date > cutoffStr) {
+      weekly[n].masterIBWeek += r.masterIB;
+      weekly[n].subIBWeek    += r.subIB;
+      weekly[n].grossWeek    += r.gross;
+      weekly[n].netWeek      += r.net;
+      if (!isCr) weekly[n].cpaWeek += (r.cpa||0);
+    }
+  }
+
+  const members = Object.keys(monthly).map(name => ({
+    name,
+    masterIB: Math.round(monthly[name].masterIB),
+    subIB:    Math.round(monthly[name].subIB),
+    cpa:      Math.round(monthly[name].cpa||0),
+    gross:    monthly[name].gross,
+    net:      monthly[name].net,
+    ...(isCr ? {} : {
+      masterIBWeek: Math.round(weekly[name].masterIBWeek),
+      subIBWeek:    Math.round(weekly[name].subIBWeek),
+      cpaWeek:      Math.round(weekly[name].cpaWeek),
+      grossWeek:    weekly[name].grossWeek,
+      netWeek:      weekly[name].netWeek,
+    })
+  }));
+  return members.sort((a,b) =>
+    b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB ||
+    b.cpa - a.cpa || b.subIB - a.subIB);
+}
+
+function renderTeam(team, records, thClass) {
+  const members = aggregate(records, false);
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
+    a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
+    a.cpa      += m.cpa;      a.cpaWeek      += m.cpaWeek;
+    a.gross    += m.gross;    a.grossWeek    += m.grossWeek;
+    a.net      += m.net;      a.netWeek      += m.netWeek;
+    return a;
+  }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
+
+  const label = {aeu:'AEU',fra:'FRA'}[team];
+  const titleCls = {aeu:'aeu-title',fra:'fra-title'}[team];
+  const netTotColor = tot.net < 0 ? 'color:#d13438' : '';
+
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}${fmtDelta(m.masterIBWeek, false)}</td>
+      <td>${m.subIB}${fmtDelta(m.subIBWeek, false)}</td>
+      <td>${m.cpa}${fmtCpaDelta(m.cpaWeek)}</td>
+      <td>${fmt$(m.gross)}${fmtDelta(m.grossWeek, true)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}${fmtDelta(m.netWeek, true)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="sec-title ${titleCls}">${label} Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div><div class="csub" style="color:#107c10">${tot.masterIBWeek>0?'+'+tot.masterIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div><div class="csub" style="color:#107c10">${tot.subIBWeek>0?'+'+tot.subIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">${tot.cpa}</div><div class="csub" style="color:#107c10">${tot.cpaWeek>0?'+'+tot.cpaWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div><div class="csub" style="color:#107c10">${tot.grossWeek>0?'+'+fmt$(tot.grossWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netTotColor}">${tot.net<0?'-':''}${fmt$(tot.net)}</div><div class="csub" style="color:#107c10">${tot.netWeek>0?'+'+fmt$(tot.netWeek):'—'}</div></div>
+    </div>
+    <table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="${thClass}" colspan="5">This Month&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8">&nbsp;&nbsp;<span style="color:#107c10">●</span> green = last 7 days</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="${thClass}">Master IB</th><th class="${thClass}">Sub IB</th><th class="${thClass}">CPA</th>
+        <th class="${thClass}">Gross</th><th class="${thClass}">Net</th>
+      </tr>
+    </thead><tbody>${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td>
+        <td><b>${tot.masterIB}</b>${fmtDelta(tot.masterIBWeek, false)}</td>
+        <td><b>${tot.subIB}</b>${fmtDelta(tot.subIBWeek, false)}</td>
+        <td><b>${tot.cpa}</b>${fmtCpaDelta(tot.cpaWeek)}</td>
+        <td><b>${fmt$(tot.gross)}</b>${fmtDelta(tot.grossWeek, true)}</td>
+        <td style="${netTotColor}"><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b>${fmtDelta(tot.netWeek, true)}</td>
+      </tr>
+    </tbody></table>`;
+}
+
+function renderCR(records) {
+  const members = aggregate(records, true);
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.subIB += m.subIB;
+    a.gross += m.gross; a.net += m.net;
+    return a;
+  }, {masterIB:0, subIB:0, gross:0, net:0});
+
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}</td>
+      <td>${m.subIB}</td>
+      <td>${fmt$(m.gross)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}</td>
+    </tr>`;
+  }).join('');
+
+  const netTotStyle = tot.net < 0 ? 'style="color:#d13438"' : '';
+  return `
+    <div class="sec-title cr-title">CR Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" ${netTotStyle}>${tot.net<0?'-':''}${fmt$(tot.net)}</div></div>
+    </div>
+    <table><thead>
+      <tr><th class="th-name">Member</th><th class="group-cr-month" colspan="4">This Month</th></tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-cr-month">Master IB</th><th class="group-cr-month">Sub IB</th>
+        <th class="group-cr-month">Gross</th><th class="group-cr-month">Net</th>
+      </tr>
+    </thead><tbody>${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td><td><b>${tot.masterIB}</b></td><td><b>${tot.subIB}</b></td>
+        <td><b>${fmt$(tot.gross)}</b></td>
+        <td ${netTotStyle}><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b></td>
+      </tr>
+    </tbody></table>`;
+}
+
+function renderX5SubTable(label, records) {
+  let members = aggregate(records, false);
+  if (!members.length) return {html: '', tot: {masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0}};
+
+  // Supervisor's row already contains members' data — subtract others' totals
+  const normalize = s => s.toLowerCase().replace(/[\s.]/g, '');
+  const supIdx = members.findIndex(m => normalize(m.name) === normalize(label));
+  if (supIdx !== -1) {
+    const others = members.filter((_, i) => i !== supIdx);
+    const othersSum = others.reduce((a, m) => ({
+      masterIB: a.masterIB + m.masterIB, subIB: a.subIB + m.subIB,
+      cpa: a.cpa + m.cpa, gross: a.gross + m.gross, net: a.net + m.net,
+      masterIBWeek: a.masterIBWeek + m.masterIBWeek, subIBWeek: a.subIBWeek + m.subIBWeek,
+      cpaWeek: a.cpaWeek + m.cpaWeek, grossWeek: a.grossWeek + m.grossWeek, netWeek: a.netWeek + m.netWeek,
+    }), {masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0});
+    const sup = {...members[supIdx]};
+    sup.gross -= othersSum.gross; sup.net -= othersSum.net;
+    sup.grossWeek -= othersSum.grossWeek; sup.netWeek -= othersSum.netWeek;
+    members = [...others, sup].sort((a,b) =>
+      b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB || b.cpa - a.cpa || b.subIB - a.subIB);
+  }
+  const tot = members.reduce((a, m) => {
+    a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
+    a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
+    a.cpa      += m.cpa;      a.cpaWeek      += m.cpaWeek;
+    a.gross    += m.gross;    a.grossWeek    += m.grossWeek;
+    a.net      += m.net;      a.netWeek      += m.netWeek;
+    return a;
+  }, {masterIB:0,masterIBWeek:0,subIB:0,subIBWeek:0,cpa:0,cpaWeek:0,gross:0,grossWeek:0,net:0,netWeek:0});
+
+  const netTotColor = tot.net < 0 ? 'color:#d13438' : '';
+  const rows = members.map(m => {
+    const netStyle = m.net < 0 ? 'style="color:#d13438"' : '';
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${m.masterIB}${fmtDelta(m.masterIBWeek, false)}</td>
+      <td>${m.subIB}${fmtDelta(m.subIBWeek, false)}</td>
+      <td>${m.cpa}${fmtCpaDelta(m.cpaWeek)}</td>
+      <td>${fmt$(m.gross)}${fmtDelta(m.grossWeek, true)}</td>
+      <td ${netStyle}>${m.net<0?'-':''}${fmt$(m.net)}${fmtDelta(m.netWeek, true)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+    <div class="x5-sub-title">${label}'s Team</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Master IB</div><div class="val">${tot.masterIB}</div><div class="csub" style="color:#107c10">${tot.masterIBWeek>0?'+'+tot.masterIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Sub IB</div><div class="val">${tot.subIB}</div><div class="csub" style="color:#107c10">${tot.subIBWeek>0?'+'+tot.subIBWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">CPA</div><div class="val">${tot.cpa}</div><div class="csub" style="color:#107c10">${tot.cpaWeek>0?'+'+tot.cpaWeek:'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(tot.gross)}</div><div class="csub" style="color:#107c10">${tot.grossWeek>0?'+'+fmt$(tot.grossWeek):'—'}</div></div>
+      <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${netTotColor}">${tot.net<0?'-':''}${fmt$(tot.net)}</div><div class="csub" style="color:#107c10">${tot.netWeek>0?'+'+fmt$(tot.netWeek):'—'}</div></div>
+    </div>
+    <table><thead>
+      <tr>
+        <th class="th-name">Member</th>
+        <th class="group-x5-month" colspan="5">This Month&nbsp;<span style="font-weight:400;font-size:10px;opacity:.8">&nbsp;&nbsp;<span style="color:#107c10">●</span> green = last 7 days</span></th>
+      </tr>
+      <tr>
+        <th class="th-name"></th>
+        <th class="group-x5-month">Master IB</th><th class="group-x5-month">Sub IB</th><th class="group-x5-month">CPA</th>
+        <th class="group-x5-month">Gross</th><th class="group-x5-month">Net</th>
+      </tr>
+    </thead><tbody>${rows}
+      <tr class="total-row">
+        <td><b>Total</b></td>
+        <td><b>${tot.masterIB}</b>${fmtDelta(tot.masterIBWeek, false)}</td>
+        <td><b>${tot.subIB}</b>${fmtDelta(tot.subIBWeek, false)}</td>
+        <td><b>${tot.cpa}</b>${fmtCpaDelta(tot.cpaWeek)}</td>
+        <td><b>${fmt$(tot.gross)}</b>${fmtDelta(tot.grossWeek, true)}</td>
+        <td style="${netTotColor}"><b>${tot.net<0?'-':''}${fmt$(tot.net)}</b>${fmtDelta(tot.netWeek, true)}</td>
+      </tr>
+    </tbody></table>`;
+  return {html, tot};
+}
+
+function renderX5(records) {
+  const bySupervisor = {};
+  for (const r of records) {
+    const sup = r.supervisor || 'Unknown';
+    (bySupervisor[sup] = bySupervisor[sup] || []).push(r);
+  }
+  const supervisors = Object.keys(bySupervisor).sort();
+
+  // Compute per-supervisor adjusted tots, then sum for combined total
+  const zero = () => ({masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0});
+  const combined = zero();
+  const subResults = supervisors.map(sup => {
+    const {html, tot} = renderX5SubTable(sup, bySupervisor[sup]);
+    for (const k of Object.keys(combined)) combined[k] += tot[k];
+    return `<div class="x5-col">${html}</div>`;
+  });
+
+  const nc = combined.net < 0 ? 'color:#d13438' : '';
+  const totalCards = `<div class="cards" style="margin-bottom:24px">
+    <div class="card"><div class="lbl">Master IB</div><div class="val">${combined.masterIB}</div><div class="csub" style="color:#107c10">${combined.masterIBWeek>0?'+'+combined.masterIBWeek:'—'}</div></div>
+    <div class="card"><div class="lbl">Sub IB</div><div class="val">${combined.subIB}</div><div class="csub" style="color:#107c10">${combined.subIBWeek>0?'+'+combined.subIBWeek:'—'}</div></div>
+    <div class="card"><div class="lbl">CPA</div><div class="val">${combined.cpa}</div><div class="csub" style="color:#107c10">${combined.cpaWeek>0?'+'+combined.cpaWeek:'—'}</div></div>
+    <div class="card"><div class="lbl">Monthly Gross</div><div class="val">${fmt$(combined.gross)}</div><div class="csub" style="color:#107c10">${combined.grossWeek>0?'+'+fmt$(combined.grossWeek):'—'}</div></div>
+    <div class="card"><div class="lbl">Monthly Net</div><div class="val" style="${nc}">${combined.net<0?'-':''}${fmt$(combined.net)}</div><div class="csub" style="color:#107c10">${combined.netWeek>0?'+'+fmt$(combined.netWeek):'—'}</div></div>
+  </div>`;
+
+  return `<div class="sec-title x5-title">X5 Team</div>${totalCards}<div class="x5-columns">${subResults.join('')}</div>`;
+}
+
+function render() {
+  if (!D) return;
+  const md = D.months[activeMonth] || {};
+  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', md.aeu || [], 'group-month');
+  document.getElementById('s-fra').innerHTML = renderTeam('fra', md.fra || [], 'group-fra-month');
+  document.getElementById('s-cr').innerHTML  = renderCR(md.cr || []);
+  document.getElementById('s-x5').innerHTML  = renderX5(md.x5 || []);
+}
+
+function show(t) {
+  activeTab = t;
+  ['aeu','fra','cr','x5'].forEach(id => document.getElementById('s-'+id).classList.toggle('active', id === t));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('t-aeu','t-fra','t-cr','t-x5'));
+  document.querySelectorAll('.tab')[['aeu','fra','x5','cr'].indexOf(t)].classList.add({aeu:'t-aeu',fra:'t-fra',cr:'t-cr',x5:'t-x5'}[t]);
+}
+
+function onMonthChange() {
+  activeMonth = document.getElementById('month-sel').value;
+  render();
+}
+
+function shiftMonth(dir) {
+  const sel = document.getElementById('month-sel');
+  const idx = sel.selectedIndex - dir;
+  if (idx >= 0 && idx < sel.options.length) {
+    sel.selectedIndex = idx;
+    onMonthChange();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowLeft')  shiftMonth(-1);
+  if (e.key === 'ArrowRight') shiftMonth(1);
+});
+
+(function init() {
+  if (!D) { document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>'; return; }
+  const months = Object.keys(D.months).sort().reverse();
+  const sel = document.getElementById('month-sel');
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if (m === D.meta.currentMonth) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  const genUtc = new Date(D.meta.generated);
+  const genUtcStr = D.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
+  const genCst = genUtc.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',hour12:false}).replace(/\//g,'-') + ' UTC+8';
+  document.getElementById('sub-title').textContent = `Team Business Report · ${activeMonth} · Updated ${genUtcStr} (${genCst})`;
+  document.title = `Ultima Markets – Team Report ${activeMonth}`;
+  render();
+})();
+</script>
+</body>
+</html>
