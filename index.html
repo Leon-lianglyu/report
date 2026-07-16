@@ -92,55 +92,83 @@ function fmtCpaDelta(v) {
   return `<div class="cpa-week">${v > 0 ? '+' : ''}${v}</div>`;
 }
 
-// Aggregate daily records for a given month and compute last-7-days from today
-function aggregate(records, isCr) {
-  const today = new Date();
-  today.setHours(0,0,0,0);
+// Records are MTD snapshots. monthRecs = selected month, allRecs = all months (for last-7-days).
+function aggregate(monthRecs, allRecs, isCr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
   const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 7);
   const cutoffStr = cutoff.toISOString().slice(0,10);
+  const todayMonth  = todayStr.slice(0,7);
+  const cutoffMonth = cutoffStr.slice(0,7);
+  const crossMonth  = todayMonth !== cutoffMonth;
 
-  const monthly = {}, weekly = {};
-  for (const r of records) {
+  // Latest MTD snapshot per member in selected month → monthly totals
+  const monthSnap = {};
+  for (const r of monthRecs) {
+    if (!monthSnap[r.name] || r.date > monthSnap[r.name].date) monthSnap[r.name] = r;
+  }
+
+  // For last-7-days: scan allRecs for today-snap, cutoff-snap, prev-month-last-snap
+  const todaySnap = {}, cutoffSnap = {}, prevLast = {};
+  for (const r of allRecs) {
     const n = r.name;
-    if (!monthly[n]) monthly[n] = {masterIB:0,subIB:0,cpa:0,gross:0,net:0};
-    if (!weekly[n])  weekly[n]  = {masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0};
-    monthly[n].masterIB += r.masterIB;
-    monthly[n].subIB    += r.subIB;
-    monthly[n].gross    += r.gross;
-    monthly[n].net      += r.net;
-    if (!isCr) monthly[n].cpa += (r.cpa||0);
-
-    if (r.date > cutoffStr) {
-      weekly[n].masterIBWeek += r.masterIB;
-      weekly[n].subIBWeek    += r.subIB;
-      weekly[n].grossWeek    += r.gross;
-      weekly[n].netWeek      += r.net;
-      if (!isCr) weekly[n].cpaWeek += (r.cpa||0);
+    if (r.date <= todayStr)  { if (!todaySnap[n]  || r.date > todaySnap[n].date)  todaySnap[n]  = r; }
+    if (r.date <= cutoffStr) { if (!cutoffSnap[n] || r.date > cutoffSnap[n].date) cutoffSnap[n] = r; }
+    if (crossMonth && r.date.slice(0,7) === cutoffMonth) {
+      if (!prevLast[n] || r.date > prevLast[n].date) prevLast[n] = r;
     }
   }
 
-  const members = Object.keys(monthly).map(name => ({
-    name,
-    masterIB: Math.round(monthly[name].masterIB),
-    subIB:    Math.round(monthly[name].subIB),
-    cpa:      Math.round(monthly[name].cpa||0),
-    gross:    monthly[name].gross,
-    net:      monthly[name].net,
-    ...(isCr ? {} : {
-      masterIBWeek: Math.round(weekly[name].masterIBWeek),
-      subIBWeek:    Math.round(weekly[name].subIBWeek),
-      cpaWeek:      Math.round(weekly[name].cpaWeek),
-      grossWeek:    weekly[name].grossWeek,
-      netWeek:      weekly[name].netWeek,
-    })
-  }));
+  const zero = () => ({masterIB:0,subIB:0,cpa:0,gross:0,net:0});
+  const names = new Set([...Object.keys(monthSnap), ...Object.keys(todaySnap)]);
+
+  const members = [...names].map(name => {
+    const ms = monthSnap[name]  || zero();
+    const ts = todaySnap[name]  || zero();
+    const cs = cutoffSnap[name] || zero();
+    const pl = prevLast[name]   || zero();
+
+    let masterIBWeek=0, subIBWeek=0, cpaWeek=0, grossWeek=0, netWeek=0;
+    if (todaySnap[name]) {
+      if (!crossMonth) {
+        masterIBWeek = ts.masterIB - cs.masterIB;
+        subIBWeek    = ts.subIB    - cs.subIB;
+        grossWeek    = ts.gross    - cs.gross;
+        netWeek      = ts.net      - cs.net;
+        if (!isCr) cpaWeek = (ts.cpa||0) - (cs.cpa||0);
+      } else {
+        // last 7 days spans two months: this_month_MTD + (prev_month_last - 7days_ago_snap)
+        masterIBWeek = ts.masterIB + pl.masterIB - cs.masterIB;
+        subIBWeek    = ts.subIB    + pl.subIB    - cs.subIB;
+        grossWeek    = ts.gross    + pl.gross    - cs.gross;
+        netWeek      = ts.net      + pl.net      - cs.net;
+        if (!isCr) cpaWeek = (ts.cpa||0) + (pl.cpa||0) - (cs.cpa||0);
+      }
+    }
+
+    return {
+      name,
+      masterIB: Math.round(ms.masterIB),
+      subIB:    Math.round(ms.subIB),
+      cpa:      Math.round(ms.cpa||0),
+      gross:    ms.gross,
+      net:      ms.net,
+      ...(isCr ? {} : {
+        masterIBWeek: Math.round(masterIBWeek),
+        subIBWeek:    Math.round(subIBWeek),
+        cpaWeek:      Math.round(cpaWeek),
+        grossWeek, netWeek,
+      })
+    };
+  });
+
   return members.sort((a,b) =>
     b.gross - a.gross || b.net - a.net || b.masterIB - a.masterIB ||
     b.cpa - a.cpa || b.subIB - a.subIB);
 }
 
-function renderTeam(team, records, thClass) {
-  const members = aggregate(records, false);
+function renderTeam(team, records, allRecs, thClass) {
+  const members = aggregate(records, allRecs, false);
   const tot = members.reduce((a, m) => {
     a.masterIB += m.masterIB; a.masterIBWeek += m.masterIBWeek;
     a.subIB    += m.subIB;    a.subIBWeek    += m.subIBWeek;
@@ -197,8 +225,8 @@ function renderTeam(team, records, thClass) {
     </tbody></table>`;
 }
 
-function renderCR(records) {
-  const members = aggregate(records, true);
+function renderCR(records, allRecs) {
+  const members = aggregate(records, allRecs, true);
   const tot = members.reduce((a, m) => {
     a.masterIB += m.masterIB; a.subIB += m.subIB;
     a.gross += m.gross; a.net += m.net;
@@ -241,8 +269,8 @@ function renderCR(records) {
     </tbody></table>`;
 }
 
-function renderX5SubTable(label, records) {
-  let members = aggregate(records, false);
+function renderX5SubTable(label, records, allRecs) {
+  let members = aggregate(records, allRecs, false);
   if (!members.length) return {html: '', tot: {masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0}};
 
   // Supervisor's row already contains members' data — subtract others' totals
@@ -316,19 +344,22 @@ function renderX5SubTable(label, records) {
   return {html, tot};
 }
 
-function renderX5(records) {
-  const bySupervisor = {};
+function renderX5(records, allRecs) {
+  const bySupervisor = {}, allBySupervisor = {};
   for (const r of records) {
     const sup = r.supervisor || 'Unknown';
     (bySupervisor[sup] = bySupervisor[sup] || []).push(r);
   }
+  for (const r of allRecs) {
+    const sup = r.supervisor || 'Unknown';
+    (allBySupervisor[sup] = allBySupervisor[sup] || []).push(r);
+  }
   const supervisors = Object.keys(bySupervisor).sort();
 
-  // Compute per-supervisor adjusted tots, then sum for combined total
   const zero = () => ({masterIB:0,subIB:0,cpa:0,gross:0,net:0,masterIBWeek:0,subIBWeek:0,cpaWeek:0,grossWeek:0,netWeek:0});
   const combined = zero();
   const subResults = supervisors.map(sup => {
-    const {html, tot} = renderX5SubTable(sup, bySupervisor[sup]);
+    const {html, tot} = renderX5SubTable(sup, bySupervisor[sup], allBySupervisor[sup] || []);
     for (const k of Object.keys(combined)) combined[k] += tot[k];
     return `<div class="x5-col">${html}</div>`;
   });
@@ -348,10 +379,13 @@ function renderX5(records) {
 function render() {
   if (!D) return;
   const md = D.months[activeMonth] || {};
-  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', md.aeu || [], 'group-month');
-  document.getElementById('s-fra').innerHTML = renderTeam('fra', md.fra || [], 'group-fra-month');
-  document.getElementById('s-cr').innerHTML  = renderCR(md.cr || []);
-  document.getElementById('s-x5').innerHTML  = renderX5(md.x5 || []);
+  const all = {aeu:[], fra:[], cr:[], x5:[]};
+  for (const m of Object.values(D.months))
+    for (const t of ['aeu','fra','cr','x5']) all[t].push(...(m[t] || []));
+  document.getElementById('s-aeu').innerHTML = renderTeam('aeu', md.aeu || [], all.aeu, 'group-month');
+  document.getElementById('s-fra').innerHTML = renderTeam('fra', md.fra || [], all.fra, 'group-fra-month');
+  document.getElementById('s-cr').innerHTML  = renderCR(md.cr || [], all.cr);
+  document.getElementById('s-x5').innerHTML  = renderX5(md.x5 || [], all.x5);
 }
 
 function show(t) {
