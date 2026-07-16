@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Ultima Markets – Team Report</title>
-<script src="data.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3f4f6;color:#1f2937}
@@ -77,9 +76,9 @@ tr:hover td{background:#f9fafb}
 <div class="footer">Currency converted to USD · Data from Lark Base</div>
 
 <script>
-const D = window.__DATA__;
+let D = null;
 let activeTab = 'aeu';
-let activeMonth = D ? D.meta.currentMonth : '';
+let activeMonth = '';
 
 function fmt$(n){ return '$' + Math.abs(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
 function fmtDelta(v, isMoney) {
@@ -382,23 +381,30 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') shiftMonth(1);
 });
 
-(function init() {
-  if (!D) { document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>'; return; }
-  const months = Object.keys(D.months).sort().reverse();
-  const sel = document.getElementById('month-sel');
-  months.forEach(m => {
-    const opt = document.createElement('option');
-    opt.value = m; opt.textContent = m;
-    if (m === D.meta.currentMonth) opt.selected = true;
-    sel.appendChild(opt);
+fetch('data.js?v=' + Date.now())
+  .then(r => r.text())
+  .then(src => {
+    const ctx = {}; new Function('window', src)(ctx);
+    D = ctx.__DATA__;
+    activeMonth = D.meta.currentMonth;
+    const months = Object.keys(D.months).sort().reverse();
+    const sel = document.getElementById('month-sel');
+    months.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m;
+      if (m === D.meta.currentMonth) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    const genUtc = new Date(D.meta.generated);
+    const genUtcStr = D.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
+    const genCst = genUtc.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',hour12:false}).replace(/\//g,'-') + ' UTC+8';
+    document.getElementById('sub-title').textContent = `Team Business Report · ${activeMonth} · Updated ${genUtcStr} (${genCst})`;
+    document.title = `Ultima Markets – Team Report ${activeMonth}`;
+    render();
+  })
+  .catch(() => {
+    document.getElementById('s-aeu').innerHTML = '<p style="padding:20px;color:red">data.js not loaded</p>';
   });
-  const genUtc = new Date(D.meta.generated);
-  const genUtcStr = D.meta.generated.replace('T',' ').replace('Z','') + ' UTC';
-  const genCst = genUtc.toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',hour12:false}).replace(/\//g,'-') + ' UTC+8';
-  document.getElementById('sub-title').textContent = `Team Business Report · ${activeMonth} · Updated ${genUtcStr} (${genCst})`;
-  document.title = `Ultima Markets – Team Report ${activeMonth}`;
-  render();
-})();
 </script>
 </body>
 </html>
