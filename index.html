@@ -120,7 +120,7 @@ function aggregate(monthRecs, allRecs, isCr) {
   }
 
   const zero = () => ({masterIB:0,subIB:0,cpa:0,gross:0,net:0});
-  const names = new Set([...Object.keys(monthSnap), ...Object.keys(todaySnap)]);
+  const names = new Set(Object.keys(monthSnap));
 
   const members = [...names].map(name => {
     const ms = monthSnap[name]  || zero();
